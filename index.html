@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#141414">
+<title>Experimental Junk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+  :root{
+    --page:#f6f5f1; --card:#ffffff; --ink:#181816; --ink-2:#55524a; --muted:#8a867a;
+    --line:#e3e0d6; --accent:#c65a2e; --tag-bg:#efece2; --tag-ink:#6b6656;
+    --font-head:"Space Grotesk",system-ui,sans-serif; --font-body:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page:#15140f; --card:#1d1c16; --ink:#f1efe4; --ink-2:#c6c2b3; --muted:#847f6f;
+      --line:#33312559; --accent:#ff8452; --tag-bg:#2a2820; --tag-ink:#a49d87;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--page); color:var(--ink); font-family:var(--font-body); line-height:1.5; padding:36px 18px 70px;}
+  .wrap{max-width:880px; margin:0 auto;}
+  header{margin-bottom:34px;}
+  .kicker{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+  h1{font-family:var(--font-head); font-weight:700; font-size:38px; letter-spacing:-0.02em; margin:6px 0 10px;}
+  header p{color:var(--ink-2); max-width:56ch; font-size:14px; margin:0;}
+  header p.hint{color:var(--muted); font-size:12.5px; margin-top:8px;}
+
+  section{margin-top:36px;}
+  .sec-head{display:flex; align-items:baseline; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;}
+  .sec-head h2{font-family:var(--font-head); font-size:16px; margin:0; font-weight:700;}
+  .sec-head .note{color:var(--muted); font-size:12px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:10px;}
+  a.card{
+    display:flex; flex-direction:column; gap:6px; padding:14px 15px; background:var(--card);
+    border:1px solid var(--line); border-radius:10px; text-decoration:none; color:inherit;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  a.card:hover{border-color:var(--accent); transform:translateY(-1px);}
+  a.card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .card-title{font-weight:600; font-size:14px; color:var(--ink); display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .card-desc{font-size:12px; color:var(--ink-2); line-height:1.45;}
+  .tag{font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; background:var(--tag-bg); color:var(--tag-ink); padding:2px 6px; border-radius:99px; font-weight:600;}
+
+  footer{margin-top:48px; padding-top:16px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted);}
+  footer code{color:var(--ink-2);}
+  footer a{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">technicallytechnicaldesign / junk drawer</div>
+    <h1>Experimental Junk</h1>
+    <p>A pointer page for the small stuff scattered across the workspace's repos — one tap to the mini-thing you're after, instead of remembering where it lives or digging through code.</p>
+    <p class="hint">Hand-maintained. Add a card here when something new shows up worth finding again.</p>
+  </header>
+
+  <section>
+    <div class="sec-head"><h2>Sound Play — GENLYD</h2><span class="note">small sound instruments, tap for sound</span></div>
+    <div class="grid">
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/">
+        <span class="card-title">Sound Play <span class="tag">hub</span></span>
+        <span class="card-desc">The curated front door to the four main instruments below, in one listening room.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/stardust-goblin-orchestra.html">
+        <span class="card-title">Stardust Goblin Orchestra <span class="tag">kiddo</span></span>
+        <span class="card-desc">Tap spells, wake colourful creatures, record a voice for the goblin choir.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/behaviour-garden.html">
+        <span class="card-title">Behaviour Garden</span>
+        <span class="card-desc">Seeded Brownian drift, weighted transitions, phase rules — same seed, same path.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/grain-garden.html">
+        <span class="card-title">Grain Garden</span>
+        <span class="card-desc">Bring one small sound, search inside it by hand, let it keep growing after you stop.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/resonator-garden.html">
+        <span class="card-title">Resonator Garden</span>
+        <span class="card-desc">Tap a place in a sound; the fragment fades, the resonators keep remembering it.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/sympathetic-network.html">
+        <span class="card-title">Sympathetic Network</span>
+        <span class="card-desc">Tap one body — it wakes its neighbours, and they decide whether to answer.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/sympathetic-network-v2.html">
+        <span class="card-title">Sympathetic Network V2 <span class="tag">variant</span></span>
+        <span class="card-desc">Tap empty ground to grow a new body; it wires itself to its three nearest neighbours.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/weather-map.html">
+        <span class="card-title">Weather Map</span>
+        <span class="card-desc">Move through a climate: pulse vs. chance, solitude vs. flocking.</span>
+      </a>
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/weather-map-v2.html">
+        <span class="card-title">Weather Map — Seasons <span class="tag">variant</span></span>
+        <span class="card-desc">Click the field to change climate; roles settle into layers, then weather colours them.</span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Live / data-driven</h2><span class="note">sonifies the workspace itself</span></div>
+    <div class="grid">
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/radio/">
+        <span class="card-title">Workspace Radio</span>
+        <span class="card-desc">A shortwave tuner: every project's stage, priority, and activity becomes a station.</span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Listening companion</h2><span class="note">phone-first, for a printed reader</span></div>
+    <div class="grid">
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/refleks-genlyd/">
+        <span class="card-title">REFLEKS × GENLYD</span>
+        <span class="card-desc">Timed listening sessions — a sustained wash, optional tilt voice, nothing recorded about you.</span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Reference</h2><span class="note">not a toy, but lives in the same repo</span></div>
+    <div class="grid">
+      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/">
+        <span class="card-title">Prompt Dictionary</span>
+        <span class="card-desc">Canonical agent phrasings, searchable, one copy button away.</span>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    Everything above lives in <code>technicallytechnicaldesign/claude-workspace-pages</code>; this page is just the front door. This repo (<code>the-rest</code>) holds nothing but the pointer — add a card by hand when something new is worth finding again.
+  </footer>
+
+</div>
+</body>
+</html>
