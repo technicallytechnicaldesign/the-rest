@@ -15,126 +15,217 @@
   @media (prefers-color-scheme: dark){
     :root{
       --page:#15140f; --card:#1d1c16; --ink:#f1efe4; --ink-2:#c6c2b3; --muted:#847f6f;
-      --line:#33312559; --accent:#ff8452; --tag-bg:#2a2820; --tag-ink:#a49d87;
+      --line:#333125; --accent:#ff8452; --tag-bg:#2a2820; --tag-ink:#bcb39c;
     }
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--page); color:var(--ink); font-family:var(--font-body); line-height:1.5; padding:36px 18px 70px;}
   .wrap{max-width:880px; margin:0 auto;}
-  header{margin-bottom:34px;}
+  header{margin-bottom:26px;}
   .kicker{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); font-weight:600;}
-  h1{font-family:var(--font-head); font-weight:700; font-size:38px; letter-spacing:-0.02em; margin:6px 0 10px;}
-  header p{color:var(--ink-2); max-width:56ch; font-size:14px; margin:0;}
+  h1{font-family:var(--font-head); font-weight:700; font-size:clamp(32px,6vw,42px); letter-spacing:-0.03em; margin:6px 0 10px;}
+  header p{color:var(--ink-2); max-width:58ch; font-size:14px; margin:0;}
   header p.hint{color:var(--muted); font-size:12.5px; margin-top:8px;}
 
-  section{margin-top:36px;}
+  .filter-bar{position:sticky; top:0; z-index:2; padding:12px 0 14px; background:var(--page); border-bottom:1px solid var(--line);}
+  .filter-top{display:flex; justify-content:space-between; align-items:baseline; gap:16px;}
+  .filter-label{font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);}
+  #result-count{font-size:11px; color:var(--muted); white-space:nowrap;}
+  .filters{display:flex; flex-wrap:wrap; gap:7px; margin-top:9px;}
+  .filter{
+    appearance:none; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--ink-2);
+    padding:5px 10px; font:600 11px var(--font-body); cursor:pointer; transition:border-color .15s ease,background .15s ease,color .15s ease;
+  }
+  .filter:hover{border-color:var(--accent);}
+  .filter[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fffaf5;}
+  .filter:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  section{margin-top:34px;}
   .sec-head{display:flex; align-items:baseline; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;}
   .sec-head h2{font-family:var(--font-head); font-size:16px; margin:0; font-weight:700;}
   .sec-head .note{color:var(--muted); font-size:12px;}
-
-  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:10px;}
-  a.card{
-    display:flex; flex-direction:column; gap:6px; padding:14px 15px; background:var(--card);
-    border:1px solid var(--line); border-radius:10px; text-decoration:none; color:inherit;
-    transition:border-color .15s ease, transform .15s ease;
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px;}
+  .card{
+    display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-height:156px; padding:14px 15px; background:var(--card);
+    border:1px solid var(--line); border-radius:10px; color:inherit;
   }
+  a.card{text-decoration:none; transition:border-color .15s ease,transform .15s ease;}
   a.card:hover{border-color:var(--accent); transform:translateY(-1px);}
   a.card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .card-title{font-weight:600; font-size:14px; color:var(--ink); display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .card--local{border-style:dashed;}
+  .card-title{font-weight:600; font-size:14px; color:var(--ink);}
   .card-desc{font-size:12px; color:var(--ink-2); line-height:1.45;}
+  .tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:auto; padding-top:2px;}
   .tag{font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; background:var(--tag-bg); color:var(--tag-ink); padding:2px 6px; border-radius:99px; font-weight:600;}
-
+  .tag--local{color:var(--accent); border:1px solid color-mix(in srgb,var(--accent) 55%,transparent); background:transparent;}
+  .empty{color:var(--muted); font-size:13px; padding:42px 0; text-align:center;}
   footer{margin-top:48px; padding-top:16px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted);}
   footer code{color:var(--ink-2);}
   footer a{color:var(--accent);}
+  [hidden]{display:none !important;}
+  @media (max-width:480px){
+    body{padding-top:24px;}
+    .filter-top{align-items:flex-start; flex-direction:column; gap:2px;}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-
+<main class="wrap">
   <header>
     <div class="kicker">technicallytechnicaldesign / junk drawer</div>
     <h1>Experimental Junk</h1>
-    <p>A pointer page for the random junk half project repos because I have a really hard time remembering where shit lives and lose things.</p>
-    <p class="hint">Hand-maintained. Which is a terrible idea but whatever.</p>
+    <p>A front door for the random half-projects, sound instruments, and little systems that are otherwise impossible to find again.</p>
+    <p class="hint">Filter by what the thing <em>is</em>, rather than where it happens to live.</p>
   </header>
 
-  <section>
-    <div class="sec-head"><h2>Sound Play — GENLYD</h2><span class="note">small sound instruments, tap for sound</span></div>
+  <nav class="filter-bar" aria-label="Filter experiments">
+    <div class="filter-top">
+      <span class="filter-label">Filter the drawer</span>
+      <span id="result-count" aria-live="polite"></span>
+    </div>
+    <div class="filters">
+      <button class="filter" type="button" data-filter="all" aria-pressed="true">Everything</button>
+      <button class="filter" type="button" data-filter="sound" aria-pressed="false">Sound</button>
+      <button class="filter" type="button" data-filter="interactive" aria-pressed="false">Interactive</button>
+      <button class="filter" type="button" data-filter="generative" aria-pressed="false">Generative</button>
+      <button class="filter" type="button" data-filter="live-data" aria-pressed="false">Live / data</button>
+      <button class="filter" type="button" data-filter="reference" aria-pressed="false">Reference</button>
+      <button class="filter" type="button" data-filter="local" aria-pressed="false">Local build</button>
+    </div>
+  </nav>
+
+  <section data-section>
+    <div class="sec-head"><h2>Sound play</h2><span class="note">small instruments, listening spaces, noisy things</span></div>
     <div class="grid">
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/">
-        <span class="card-title">Sound Play <span class="tag">hub</span></span>
-        <span class="card-desc">The curated front door to the four main instruments below, in one listening room.</span>
+      <a class="card" data-tags="sound hub" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/">
+        <span class="card-title">Sound Play</span>
+        <span class="card-desc">The front door to the little instruments below, in one listening room.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">hub</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/stardust-goblin-orchestra.html">
-        <span class="card-title">Stardust Goblin Orchestra <span class="tag">kiddo</span></span>
+      <a class="card" data-tags="sound interactive kid-friendly" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/stardust-goblin-orchestra.html">
+        <span class="card-title">Stardust Goblin Orchestra</span>
         <span class="card-desc">Tap spells, wake colourful creatures, record a voice for the goblin choir.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">kid-friendly</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/behaviour-garden.html">
+      <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/behaviour-garden.html">
         <span class="card-title">Behaviour Garden</span>
         <span class="card-desc">Seeded Brownian drift, weighted transitions, phase rules — same seed, same path.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/grain-garden.html">
+      <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/grain-garden.html">
         <span class="card-title">Grain Garden</span>
         <span class="card-desc">Bring one small sound, search inside it by hand, let it keep growing after you stop.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/resonator-garden.html">
+      <a class="card" data-tags="sound interactive" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/resonator-garden.html">
         <span class="card-title">Resonator Garden</span>
         <span class="card-desc">Tap a place in a sound; the fragment fades, the resonators keep remembering it.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/sympathetic-network.html">
+      <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/sympathetic-network.html">
         <span class="card-title">Sympathetic Network</span>
         <span class="card-desc">Tap one body — it wakes its neighbours, and they decide whether to answer.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/sympathetic-network-v2.html">
-        <span class="card-title">Sympathetic Network V2 <span class="tag">variant</span></span>
+      <a class="card" data-tags="sound interactive generative variant" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/sympathetic-network-v2.html">
+        <span class="card-title">Sympathetic Network V2</span>
         <span class="card-desc">Tap empty ground to grow a new body; it wires itself to its three nearest neighbours.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span><span class="tag">variant</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/weather-map.html">
+      <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/weather-map.html">
         <span class="card-title">Weather Map</span>
         <span class="card-desc">Move through a climate: pulse vs. chance, solitude vs. flocking.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/sound-play/weather-map-v2.html">
-        <span class="card-title">Weather Map — Seasons <span class="tag">variant</span></span>
+      <a class="card" data-tags="sound interactive generative variant" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/weather-map-v2.html">
+        <span class="card-title">Weather Map — Seasons</span>
         <span class="card-desc">Click the field to change climate; roles settle into layers, then weather colours them.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span><span class="tag">variant</span></span>
       </a>
     </div>
   </section>
 
-  <section>
-    <div class="sec-head"><h2>Live / data-driven</h2><span class="note">sonifies the workspace itself</span></div>
+  <section data-section>
+    <div class="sec-head"><h2>Live systems</h2><span class="note">things that listen to another system</span></div>
     <div class="grid">
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/radio/">
+      <a class="card" data-tags="sound interactive live-data" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/radio/">
         <span class="card-title">Workspace Radio</span>
         <span class="card-desc">A shortwave tuner: every project's stage, priority, and activity becomes a station.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">live / data</span></span>
       </a>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><h2>Listening companion</h2><span class="note">phone-first, for a printed reader</span></div>
-    <div class="grid">
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/refleks-genlyd/">
+      <a class="card" data-tags="sound interactive companion" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/refleks-genlyd/">
         <span class="card-title">REFLEKS × GENLYD</span>
         <span class="card-desc">Timed listening sessions — a sustained wash, optional tilt voice, nothing recorded about you.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">companion</span></span>
       </a>
     </div>
   </section>
 
-  <section>
-    <div class="sec-head"><h2>Reference</h2><span class="note">not a toy, but lives in the same repo</span></div>
+  <section data-section>
+    <div class="sec-head"><h2>Reference</h2><span class="note">useful infrastructure masquerading as a page</span></div>
     <div class="grid">
-      <a class="card" href="https://technicallytechnicaldesign.github.io/claude-workspace-pages/">
+      <a class="card" data-tags="reference tool" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/">
         <span class="card-title">Prompt Dictionary</span>
         <span class="card-desc">Canonical agent phrasings, searchable, one copy button away.</span>
+        <span class="tags"><span class="tag">reference</span><span class="tag">tool</span></span>
       </a>
     </div>
   </section>
 
-  <footer>
-    Everything above lives in <code>technicallytechnicaldesign/claude-workspace-pages</code>; this page is just the front door. This repo (<code>the-rest</code>) holds nothing but the pointer — add a card by hand when something new is worth finding again.
-  </footer>
+  <section data-section>
+    <div class="sec-head"><h2>Local workbench</h2><span class="note">real, but not publicly deployed yet</span></div>
+    <div class="grid">
+      <article class="card card--local" data-tags="sound interactive generative local">
+        <span class="card-title">RIME/DAEMON</span>
+        <span class="card-desc">A cyberpunk poetry console that opens into a living street of glyphs, daemons, click events, and an opt-in soundscape.</span>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span><span class="tag tag--local">local build</span></span>
+      </article>
+    </div>
+  </section>
 
-</div>
+  <p class="empty" id="empty-state" aria-live="polite" hidden>Nothing in this drawer yet. Try another tag.</p>
+
+  <footer>
+    The public cards live in <a href="https://github.com/technicallytechnicaldesign/vaguely-finished-miniprojects"><code>technicallytechnicaldesign/vaguely-finished-miniprojects</code></a>.
+    RIME/DAEMON is shown honestly as a local build until it has a public address.
+  </footer>
+</main>
+
+<script>
+  const filters = [...document.querySelectorAll(".filter")];
+  const cards = [...document.querySelectorAll(".card")];
+  const sections = [...document.querySelectorAll("[data-section]")];
+  const count = document.getElementById("result-count");
+  const emptyState = document.getElementById("empty-state");
+  let activeFilter = "all";
+
+  function applyFilter(filter) {
+    activeFilter = filter;
+    let visible = 0;
+
+    cards.forEach((card) => {
+      const matches = filter === "all" || card.dataset.tags.split(" ").includes(filter);
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    });
+
+    sections.forEach((section) => {
+      section.hidden = !section.querySelector(".card:not([hidden])");
+    });
+
+    filters.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.filter === filter));
+    });
+
+    count.textContent = visible + (visible === 1 ? " thing" : " things");
+    emptyState.hidden = visible !== 0;
+  }
+
+  filters.forEach((button) => {
+    button.addEventListener("click", () => applyFilter(button.dataset.filter));
+  });
+
+  applyFilter(activeFilter);
+</script>
 </body>
 </html>
