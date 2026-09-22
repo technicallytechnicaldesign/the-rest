@@ -52,12 +52,10 @@
   a.card{text-decoration:none; transition:border-color .15s ease,transform .15s ease;}
   a.card:hover{border-color:var(--accent); transform:translateY(-1px);}
   a.card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .card--local{border-style:dashed;}
   .card-title{font-weight:600; font-size:14px; color:var(--ink);}
   .card-desc{font-size:12px; color:var(--ink-2); line-height:1.45;}
   .tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:auto; padding-top:2px;}
   .tag{font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; background:var(--tag-bg); color:var(--tag-ink); padding:2px 6px; border-radius:99px; font-weight:600;}
-  .tag--local{color:var(--accent); border:1px solid color-mix(in srgb,var(--accent) 55%,transparent); background:transparent;}
   .empty{color:var(--muted); font-size:13px; padding:42px 0; text-align:center;}
   footer{margin-top:48px; padding-top:16px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted);}
   footer code{color:var(--ink-2);}
@@ -90,7 +88,6 @@
       <button class="filter" type="button" data-filter="generative" aria-pressed="false">Generative</button>
       <button class="filter" type="button" data-filter="live-data" aria-pressed="false">Live / data</button>
       <button class="filter" type="button" data-filter="reference" aria-pressed="false">Reference</button>
-      <button class="filter" type="button" data-filter="local" aria-pressed="false">Local build</button>
     </div>
   </nav>
 
@@ -173,13 +170,13 @@
   </section>
 
   <section data-section>
-    <div class="sec-head"><h2>Local workbench</h2><span class="note">real, but not publicly deployed yet</span></div>
+    <div class="sec-head"><h2>Street terminal</h2><span class="note">poetry as executable space</span></div>
     <div class="grid">
-      <article class="card card--local" data-tags="sound interactive generative local">
+      <a class="card" data-tags="sound interactive generative" href="rimedaemon/">
         <span class="card-title">RIME/DAEMON</span>
         <span class="card-desc">A cyberpunk poetry console that opens into a living street of glyphs, daemons, click events, and an opt-in soundscape.</span>
-        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span><span class="tag tag--local">local build</span></span>
-      </article>
+        <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
+      </a>
     </div>
   </section>
 
@@ -187,7 +184,7 @@
 
   <footer>
     The public cards live in <a href="https://github.com/technicallytechnicaldesign/vaguely-finished-miniprojects"><code>technicallytechnicaldesign/vaguely-finished-miniprojects</code></a>.
-    RIME/DAEMON is shown honestly as a local build until it has a public address.
+    RIME/DAEMON runs here as a browser-only static build: no account, no upload, no server-side poetry.
   </footer>
 </main>
 
