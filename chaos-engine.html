@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111018">
+<title>Chaos Engine</title>
+<style>
+  :root{--ink:#fff9ef;--muted:#b9adbb;--paper:#111018;--panel:#1d1824;--panel-2:#291d31;--hot:#ff4e8b;--acid:#d7ff54;--blue:#7e8cff;--line:rgba(255,249,239,.19);--mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;--head:Impact,"Arial Black",system-ui,sans-serif;}
+  *{box-sizing:border-box}
+  html{min-width:320px;background:var(--paper)}
+  body{min-height:100vh;margin:0;overflow-x:hidden;background:radial-gradient(circle at 18% 18%,rgba(255,78,139,.2),transparent 30rem),radial-gradient(circle at 82% 76%,rgba(126,140,255,.18),transparent 33rem),var(--paper);color:var(--ink);font:16px/1.5 var(--mono);}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;opacity:.55;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:22px 22px;mask-image:linear-gradient(#000,transparent 92%);}
+  main{width:min(920px,calc(100% - 36px));margin:0 auto;padding:clamp(34px,8vw,90px) 0 64px;}
+  .topline{display:flex;justify-content:space-between;gap:18px;margin-bottom:clamp(25px,5vw,52px);color:var(--acid);font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;}
+  a{color:inherit}
+  .back{color:var(--muted);text-decoration:none;border-bottom:1px solid currentColor;transition:color .15s ease;}
+  .back:hover{color:var(--acid)}
+  h1{max-width:9ch;margin:0;font:clamp(58px,15vw,142px)/.78 var(--head);letter-spacing:.02em;text-transform:uppercase;text-shadow:5px 5px 0 var(--hot),10px 10px 0 rgba(126,140,255,.46);}
+  .intro{max-width:56ch;margin:32px 0 36px;color:var(--muted);font-size:clamp(13px,2vw,16px);}
+  .intro strong{color:var(--acid)}
+  .machine{position:relative;overflow:hidden;border:1px solid var(--line);background:linear-gradient(135deg,rgba(255,255,255,.065),transparent 40%),var(--panel);box-shadow:12px 13px 0 rgba(255,78,139,.66);}
+  .machine::after{content:"NO WARRANTY / NO WITNESSES / NO WARRANTY / NO WITNESSES";position:absolute;right:-52px;bottom:23px;z-index:0;transform:rotate(-32deg);color:rgba(215,255,84,.08);font:900 24px/1 var(--head);letter-spacing:.09em;white-space:nowrap;pointer-events:none;}
+  .machine-head{position:relative;z-index:1;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.16);font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;}
+  .lamp{width:10px;height:10px;border-radius:50%;background:var(--hot);box-shadow:0 0 0 3px rgba(255,78,139,.15),0 0 18px var(--hot);animation:blink 1.8s ease-in-out infinite;}
+  .machine-head span:last-child{margin-left:auto;color:var(--acid);}
+  .prompt-wrap{position:relative;z-index:1;padding:clamp(27px,6vw,58px) clamp(20px,6vw,58px) 29px;}
+  .project-label{display:inline-block;margin:0 0 21px;padding:4px 8px;border:1px solid var(--blue);color:var(--blue);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
+  .prompt{max-width:25ch;margin:0;color:var(--ink);font:clamp(28px,5.1vw,55px)/1.03 var(--head);letter-spacing:.018em;text-transform:uppercase;}
+  .prompt::first-letter{color:var(--hot)}
+  .controls{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;padding:0 clamp(20px,6vw,58px) 31px;}
+  button{border:1px solid var(--ink);border-radius:0;background:var(--ink);color:var(--paper);padding:12px 15px;cursor:pointer;font:700 11px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;transition:transform .14s ease,box-shadow .14s ease,background .14s ease,color .14s ease;}
+  button:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--hot)}
+  button:focus-visible,a:focus-visible{outline:3px solid var(--acid);outline-offset:4px}
+  #swap{background:transparent;color:var(--ink)}
+  #swap:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+  #copy{background:transparent;border-color:var(--line);color:var(--muted)}
+  #copy:hover{background:var(--acid);border-color:var(--acid);color:#151318;box-shadow:4px 4px 0 var(--blue)}
+  .microcopy{margin:19px 0 0;color:var(--muted);font-size:10px;letter-spacing:.04em;text-transform:uppercase;}
+  .fine-print{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:48px;border:1px solid var(--line);background:var(--line);}
+  .fine-print div{min-height:98px;padding:14px;background:var(--paper);color:var(--muted);font-size:11px;}
+  .fine-print b{display:block;margin-bottom:6px;color:var(--acid);font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+  @keyframes blink{50%{opacity:.35;box-shadow:0 0 0 3px rgba(255,78,139,.08),0 0 7px var(--hot)}}
+  @media (max-width:620px){main{width:min(100% - 28px,920px)}.topline{align-items:flex-start;flex-direction:column;gap:8px}.fine-print{grid-template-columns:1fr}.fine-print div{min-height:auto}.machine{box-shadow:7px 8px 0 rgba(255,78,139,.66)}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="topline"><span>Experimental junk / portable unit</span><a class="back" href="index.html">back to the pile</a></div>
+  <h1>Chaos<br>Engine</h1>
+  <p class="intro"><strong>Two sentences.</strong> One extremely questionable instruction for a project that did not consent to being perceived today.</p>
+
+  <section class="machine" aria-labelledby="machine-title">
+    <div class="machine-head"><span class="lamp" aria-hidden="true"></span><span id="machine-title">generative bad-idea dispenser</span><span>roll <span id="roll-count">01</span></span></div>
+    <div class="prompt-wrap">
+      <span class="project-label" id="project-label">your current project</span>
+      <p class="prompt" id="prompt" aria-live="polite"></p>
+      <p class="microcopy">2 sentences &middot; 0 actual responsibility &middot; results may become folklore</p>
+    </div>
+    <div class="controls">
+      <button type="button" id="roll">roll a new mess</button>
+      <button type="button" id="swap">change suspect</button>
+      <button type="button" id="copy">copy mischief</button>
+    </div>
+  </section>
+
+  <section class="fine-print" aria-label="How this tiny machine works">
+    <div><b>No account</b>It knows nothing about your work. It just has opinions about it.</div>
+    <div><b>Two sentences</b>The engine stops before the idea becomes a motivational speech.</div>
+    <div><b>Copy if useful</b>Keep the line, ignore the line, make a worse one. All acceptable.</div>
+  </section>
+</main>
+<script>
+  const suspects = [
+    "your current project", "your favorite project", "your most hated project", "the project you keep avoiding",
+    "the thing with a folder called final-final", "the project you call finished but keep reopening", "your oldest unresolved idea",
+    "the project that keeps getting sensible", "the thing you abandoned for no good reason", "the project nobody is allowed to make eye contact with"
+  ];
+  const openers = [
+    "Ask for temporary custody of", "Borrow the keys to", "Wake up", "Put on gloves and gently disturb", "Choose violence, but only toward",
+    "Make direct eye contact with", "Sneak into", "Pretend you were hired to misunderstand", "Open the forbidden drawer marked", "Interrupt"
+  ];
+  const rituals = [
+    "Turn random lines of its code into spaghetti", "Find its most boring sentence and declare a small emergency",
+    "Treat the README like a witness statement", "Interview it as if it has been lying to you", "Give every button one minute to defend itself",
+    "Describe it to an intelligent crow", "Assume its first instinct is wrong but emotionally sincere", "Find the tiny ritual hiding inside the practical job",
+    "Look only at its seams, handles and silences", "Give it a fake birthday and an inconvenient childhood", "Explain it badly on purpose"
+  ];
+  const turns = [
+    "build the one feature it is most afraid of", "make its quietest part cause a scene", "replace one sensible interaction with a tiny ceremony",
+    "turn one hidden assumption into a visible object", "give the boring workflow a slightly illegal feeling", "make the error state more desirable than success",
+    "design a companion object with one mysterious responsibility", "make the prototype from the wrong medium", "give it one unnecessary ceremonial lever",
+    "use only circles, warnings and one excellent sound", "stop before it looks respectable", "document only what surprised you",
+    "leave one clue for the next version", "make it useful in a more dangerous direction", "name the result before you understand it"
+  ];
+  let currentSuspect = 0;
+  let rolls = 0;
+  const prompt = document.getElementById("prompt");
+  const label = document.getElementById("project-label");
+  const rollCount = document.getElementById("roll-count");
+  const pick = (list) => list[Math.floor(Math.random() * list.length)];
+  const cap = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
+  function makeMess(changeSuspect = false) {
+    if (changeSuspect || rolls === 0) currentSuspect = (currentSuspect + 1 + Math.floor(Math.random() * (suspects.length - 1))) % suspects.length;
+    const suspect = suspects[currentSuspect];
+    prompt.textContent = `${cap(pick(openers))} ${suspect}. ${cap(pick(rituals))}, then ${pick(turns)}.`;
+    label.textContent = suspect;
+    rolls += 1;
+    rollCount.textContent = String(rolls).padStart(2, "0");
+  }
+
+  document.getElementById("roll").addEventListener("click", () => makeMess());
+  document.getElementById("swap").addEventListener("click", () => makeMess(true));
+  document.getElementById("copy").addEventListener("click", async (event) => {
+    const original = event.currentTarget.textContent;
+    try {
+      await navigator.clipboard.writeText(prompt.textContent);
+      event.currentTarget.textContent = "copied, unfortunately";
+    } catch {
+      event.currentTarget.textContent = "copy it by hand";
+    }
+    window.setTimeout(() => { event.currentTarget.textContent = original; }, 1300);
+  });
+  makeMess(true);
+</script>
+</body>
+</html>
