@@ -27,7 +27,7 @@
   .prompt-wrap{position:relative;z-index:1;padding:clamp(27px,6vw,58px) clamp(20px,6vw,58px) 29px;}
   .project-label{display:inline-block;margin:0 0 21px;padding:4px 8px;border:1px solid var(--blue);color:var(--blue);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
   .prompt{max-width:25ch;margin:0;color:var(--ink);font:clamp(28px,5.1vw,55px)/1.03 var(--head);letter-spacing:.018em;text-transform:uppercase;}
-  .prompt::first-letter{color:var(--hot)}
+  .prompt .project-sentence{color:var(--hot)}
   .controls{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;padding:0 clamp(20px,6vw,58px) 31px;}
   button{border:1px solid var(--ink);border-radius:0;background:var(--ink);color:var(--paper);padding:12px 15px;cursor:pointer;font:700 11px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;transition:transform .14s ease,box-shadow .14s ease,background .14s ease,color .14s ease;}
   button:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--hot)}
@@ -37,6 +37,8 @@
   #copy{background:transparent;border-color:var(--line);color:var(--muted)}
   #copy:hover{background:var(--acid);border-color:var(--acid);color:#151318;box-shadow:4px 4px 0 var(--blue)}
   .microcopy{margin:19px 0 0;color:var(--muted);font-size:10px;letter-spacing:.04em;text-transform:uppercase;}
+  .reasonable{margin:8px 0 0;color:var(--muted);font-size:10px;letter-spacing:.025em;}
+  .reasonable strong{color:var(--acid);font-weight:700;text-transform:uppercase;}
   .fine-print{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:48px;border:1px solid var(--line);background:var(--line);}
   .fine-print div{min-height:98px;padding:14px;background:var(--paper);color:var(--muted);font-size:11px;}
   .fine-print b{display:block;margin-bottom:6px;color:var(--acid);font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
@@ -57,6 +59,7 @@
       <span class="project-label" id="project-label">your current project</span>
       <p class="prompt" id="prompt" aria-live="polite"></p>
       <p class="microcopy">2 sentences &middot; 0 actual responsibility &middot; results may become folklore</p>
+      <p class="reasonable"><strong>reasonable alternative:</strong> fix the thing you've been putting off.</p>
     </div>
     <div class="controls">
       <button type="button" id="roll">roll a new mess</button>
@@ -105,7 +108,12 @@
   function makeMess(changeSuspect = false) {
     if (changeSuspect || rolls === 0) currentSuspect = (currentSuspect + 1 + Math.floor(Math.random() * (suspects.length - 1))) % suspects.length;
     const suspect = suspects[currentSuspect];
-    prompt.textContent = `${cap(pick(openers))} ${suspect}. ${cap(pick(rituals))}, then ${pick(turns)}.`;
+    const target = `${cap(pick(openers))} ${suspect}.`;
+    const instruction = `${cap(pick(rituals))}, then ${pick(turns)}.`;
+    const targetSpan = document.createElement("span");
+    targetSpan.className = "project-sentence";
+    targetSpan.textContent = target;
+    prompt.replaceChildren(targetSpan, document.createTextNode(` ${instruction}`));
     label.textContent = suspect;
     rolls += 1;
     rollCount.textContent = String(rolls).padStart(2, "0");
