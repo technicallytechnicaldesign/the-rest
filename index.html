@@ -3,188 +3,224 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#141414">
-<title>Experimental Junk</title>
+<meta name="theme-color" content="#15131a">
+<title>The Rest — technicallytechnicaldesign</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <style>
   :root{
-    --page:#f6f5f1; --card:#ffffff; --ink:#181816; --ink-2:#55524a; --muted:#8a867a;
-    --line:#e3e0d6; --accent:#c65a2e; --tag-bg:#efece2; --tag-ink:#6b6656;
+    --page:#f7f0e7; --card:#fffdf8; --ink:#17131c; --ink-2:#514959; --muted:#776d79;
+    --line:#d9cbd0; --accent:#f15439; --shadow:#17131c; --paper-dot:#efc8be;
     --font-head:"Space Grotesk",system-ui,sans-serif; --font-body:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --page:#15140f; --card:#1d1c16; --ink:#f1efe4; --ink-2:#c6c2b3; --muted:#847f6f;
-      --line:#333125; --accent:#ff8452; --tag-bg:#2a2820; --tag-ink:#bcb39c;
+      --page:#15131a; --card:#211d27; --ink:#fff8ec; --ink-2:#d9d0d9; --muted:#aa9fac;
+      --line:#403747; --accent:#ff806d; --shadow:#08070a; --paper-dot:#332640;
     }
   }
   *{box-sizing:border-box}
-  body{margin:0; background:var(--page); color:var(--ink); font-family:var(--font-body); line-height:1.5; padding:36px 18px 70px;}
-  .wrap{max-width:880px; margin:0 auto;}
-  header{margin-bottom:26px;}
-  .kicker{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); font-weight:600;}
-  h1{font-family:var(--font-head); font-weight:700; font-size:clamp(32px,6vw,42px); letter-spacing:-0.03em; margin:6px 0 10px;}
-  header p{color:var(--ink-2); max-width:58ch; font-size:14px; margin:0;}
-  header p.hint{color:var(--muted); font-size:12.5px; margin-top:8px;}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; min-width:320px; background-color:var(--page); color:var(--ink); font-family:var(--font-body); line-height:1.5;
+    padding:44px 20px 84px; overflow-x:hidden;
+    background-image:radial-gradient(var(--paper-dot) 1px,transparent 1.2px); background-size:16px 16px;
+  }
+  .wrap{max-width:1010px; margin:0 auto;}
+  header{position:relative; margin:0 0 34px; padding:2px 0 4px;}
+  header::after{content:"✦  ◌  +  ∿  ✦"; position:absolute; right:0; top:6px; color:#5d5ad9; font-size:clamp(20px,4vw,38px); letter-spacing:.22em; transform:rotate(-5deg);}
+  .kicker{font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+  h1{font-family:var(--font-head); font-weight:700; font-size:clamp(46px,9vw,86px); letter-spacing:-.075em; line-height:.86; margin:10px 0 17px; max-width:7ch;}
+  header p{color:var(--ink-2); max-width:57ch; font-size:14px; margin:0;}
+  header p.hint{color:var(--muted); font-size:12px; margin-top:10px; max-width:47ch;}
 
-  .filter-bar{position:sticky; top:0; z-index:2; padding:12px 0 14px; background:var(--page); border-bottom:1px solid var(--line);}
+  .filter-bar{position:sticky; top:0; z-index:2; padding:15px 0 17px; background:color-mix(in srgb,var(--page) 92%,transparent); border-bottom:2px solid var(--ink); backdrop-filter:blur(8px);}
   .filter-top{display:flex; justify-content:space-between; align-items:baseline; gap:16px;}
-  .filter-label{font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);}
-  #result-count{font-size:11px; color:var(--muted); white-space:nowrap;}
-  .filters{display:flex; flex-wrap:wrap; gap:7px; margin-top:9px;}
+  .filter-label{font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--ink);}
+  #result-count{font-size:10px; color:var(--muted); white-space:nowrap;}
+  .filters{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
   .filter{
-    appearance:none; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--ink-2);
-    padding:5px 10px; font:600 11px var(--font-body); cursor:pointer; transition:border-color .15s ease,background .15s ease,color .15s ease;
+    --filter-colour:var(--ink); appearance:none; border:2px solid var(--filter-colour); border-radius:999px; background:var(--card); color:var(--ink);
+    padding:5px 10px 4px; font:600 10px var(--font-body); cursor:pointer; box-shadow:2px 2px 0 var(--filter-colour);
+    transition:transform .15s ease,box-shadow .15s ease,background .15s ease,color .15s ease;
   }
-  .filter:hover{border-color:var(--accent);}
-  .filter[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fffaf5;}
-  .filter:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .filter[data-filter="sound"]{--filter-colour:#df3f8c;}
+  .filter[data-filter="interactive"]{--filter-colour:#4359da;}
+  .filter[data-filter="generative"]{--filter-colour:#15865e;}
+  .filter[data-filter="live-data"]{--filter-colour:#df741b;}
+  .filter[data-filter="reference"]{--filter-colour:#7956b8;}
+  .filter:hover{transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--filter-colour);}
+  .filter[aria-pressed="true"]{background:var(--filter-colour); color:#fffdf8;}
+  .filter:focus-visible,a.card:focus-visible{outline:3px solid var(--accent); outline-offset:3px;}
 
-  section{margin-top:34px;}
-  .sec-head{display:flex; align-items:baseline; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;}
-  .sec-head h2{font-family:var(--font-head); font-size:16px; margin:0; font-weight:700;}
-  .sec-head .note{color:var(--muted); font-size:12px;}
-  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px;}
+  section{--section-colour:var(--accent); margin-top:42px;}
+  section:nth-of-type(2){--section-colour:#4359da;}
+  section:nth-of-type(3){--section-colour:#7956b8;}
+  section:nth-of-type(4){--section-colour:#15865e;}
+  .sec-head{display:flex; align-items:baseline; gap:11px; margin-bottom:14px; border-bottom:2px solid var(--ink); padding:0 0 9px;}
+  .sec-head h2{font-family:var(--font-head); font-size:clamp(20px,3vw,26px); letter-spacing:-.04em; margin:0; font-weight:700;}
+  .sec-head h2::before{content:"●"; color:var(--section-colour); font-size:.74em; margin-right:.38em; vertical-align:.1em;}
+  .sec-head .note{color:var(--muted); font-size:11px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(245px,1fr)); gap:15px;}
   .card{
-    display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-height:156px; padding:14px 15px; background:var(--card);
-    border:1px solid var(--line); border-radius:10px; color:inherit;
+    --card-colour:#f15439; display:flex; position:relative; isolation:isolate; flex-direction:column; align-items:flex-start; gap:9px; min-height:172px; padding:16px;
+    background:var(--card); border:2px solid var(--ink); border-radius:2px 13px 5px 11px; box-shadow:5px 5px 0 var(--card-colour); color:inherit; overflow:hidden;
   }
-  a.card{text-decoration:none; transition:border-color .15s ease,transform .15s ease;}
-  a.card:hover{border-color:var(--accent); transform:translateY(-1px);}
-  a.card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .card-title{font-weight:600; font-size:14px; color:var(--ink);}
-  .card-desc{font-size:12px; color:var(--ink-2); line-height:1.45;}
-  .tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:auto; padding-top:2px;}
-  .tag{font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; background:var(--tag-bg); color:var(--tag-ink); padding:2px 6px; border-radius:99px; font-weight:600;}
-  .empty{color:var(--muted); font-size:13px; padding:42px 0; text-align:center;}
-  footer{margin-top:48px; padding-top:16px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted);}
+  .card:nth-child(5n + 2){--card-colour:#4359da;}
+  .card:nth-child(5n + 3){--card-colour:#df3f8c;}
+  .card:nth-child(5n + 4){--card-colour:#15865e;}
+  .card:nth-child(5n + 5){--card-colour:#df741b;}
+  .card::before{content:""; position:absolute; z-index:-1; right:-25px; top:-26px; width:86px; height:86px; border-radius:50%; background:var(--card-colour); opacity:.15;}
+  .card::after{content:"↗"; position:absolute; right:13px; bottom:10px; color:var(--card-colour); font:600 24px/1 var(--font-head);}
+  a.card{text-decoration:none; transition:transform .16s ease,box-shadow .16s ease;}
+  a.card:hover{transform:translate(-2px,-3px) rotate(-.35deg); box-shadow:8px 8px 0 var(--card-colour);}
+  a.card:nth-child(even):hover{transform:translate(2px,-3px) rotate(.35deg);}
+  .card-title{font:700 16px/1.1 var(--font-head); letter-spacing:-.035em; color:var(--ink); max-width:calc(100% - 30px);}
+  .card-desc{font-size:11.5px; color:var(--ink-2); line-height:1.5; max-width:30ch;}
+  .tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:auto; padding-top:5px; padding-right:26px;}
+  .tag{--tag-colour:#68606b; --tag-wash:#eee9e9; font-size:9px; line-height:1.2; letter-spacing:.04em; text-transform:uppercase; background:var(--tag-wash); color:var(--tag-colour); border:1px solid var(--tag-colour); padding:3px 6px 2px; border-radius:999px; font-weight:600;}
+  .tag[data-tag="sound"]{--tag-colour:#b9256e; --tag-wash:#ffd9e9;}
+  .tag[data-tag="interactive"]{--tag-colour:#3142bd; --tag-wash:#dce2ff;}
+  .tag[data-tag="generative"]{--tag-colour:#08714a; --tag-wash:#cff5dc;}
+  .tag[data-tag="live-data"]{--tag-colour:#a64700; --tag-wash:#ffe0bd;}
+  .tag[data-tag="reference"]{--tag-colour:#69429e; --tag-wash:#eadcff;}
+  .tag[data-tag="hub"]{--tag-colour:#9d4d0e; --tag-wash:#ffedc8;}
+  .tag[data-tag="variant"]{--tag-colour:#62605a; --tag-wash:#ece9e2;}
+  .tag[data-tag="kid-friendly"]{--tag-colour:#be3775; --tag-wash:#ffe0ed;}
+  .tag[data-tag="companion"]{--tag-colour:#276e7b; --tag-wash:#d4f1f4;}
+  .tag[data-tag="tool"]{--tag-colour:#5b4d32; --tag-wash:#eee5c8;}
+  .empty{color:var(--muted); font-size:12px; padding:48px 0; text-align:center;}
+  footer{margin-top:56px; padding-top:17px; border-top:2px solid var(--ink); font-size:11px; color:var(--muted); max-width:72ch;}
   footer code{color:var(--ink-2);}
-  footer a{color:var(--accent);}
+  footer a{color:var(--accent); font-weight:600;}
   [hidden]{display:none !important;}
-  @media (max-width:480px){
-    body{padding-top:24px;}
-    .filter-top{align-items:flex-start; flex-direction:column; gap:2px;}
+  @media (max-width:560px){
+    body{padding:28px 16px 64px;}
+    header::after{position:static; display:block; margin-top:12px; font-size:22px;}
+    h1{max-width:none;}
+    .filter-top{align-items:flex-start; flex-direction:column; gap:3px;}
+    .grid{grid-template-columns:1fr; gap:14px;}
   }
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto !important; transition:none !important;}}
 </style>
 </head>
 <body>
 <main class="wrap">
   <header>
-    <div class="kicker">technicallytechnicaldesign / junk drawer</div>
-    <h1>Experimental Junk</h1>
-    <p>A front door for the random half-projects, sound instruments, and little systems that are otherwise impossible to find again.</p>
-    <p class="hint">Filter by what the thing <em>is</em>, rather than where it happens to live.</p>
+    <div class="kicker">technicallytechnicaldesign / the bits that escaped</div>
+    <h1>The Rest*</h1>
+    <p>A small, loud pile of sound toys, odd systems, and half-finished contraptions. They are here because my bookmarks have betrayed me.</p>
+    <p class="hint">Pick a species. The drawer will cough up the matching bits.</p>
   </header>
 
   <nav class="filter-bar" aria-label="Filter experiments">
     <div class="filter-top">
-      <span class="filter-label">Filter the drawer</span>
+      <span class="filter-label">shake the drawer</span>
       <span id="result-count" aria-live="polite"></span>
     </div>
     <div class="filters">
-      <button class="filter" type="button" data-filter="all" aria-pressed="true">Everything</button>
-      <button class="filter" type="button" data-filter="sound" aria-pressed="false">Sound</button>
-      <button class="filter" type="button" data-filter="interactive" aria-pressed="false">Interactive</button>
-      <button class="filter" type="button" data-filter="generative" aria-pressed="false">Generative</button>
-      <button class="filter" type="button" data-filter="live-data" aria-pressed="false">Live / data</button>
-      <button class="filter" type="button" data-filter="reference" aria-pressed="false">Reference</button>
+      <button class="filter" type="button" data-filter="all" aria-pressed="true">all the bits</button>
+      <button class="filter" type="button" data-filter="sound" aria-pressed="false">sounds</button>
+      <button class="filter" type="button" data-filter="interactive" aria-pressed="false">poke-able</button>
+      <button class="filter" type="button" data-filter="generative" aria-pressed="false">makes itself</button>
+      <button class="filter" type="button" data-filter="live-data" aria-pressed="false">live weirdness</button>
+      <button class="filter" type="button" data-filter="reference" aria-pressed="false">receipts</button>
     </div>
   </nav>
 
   <section data-section>
-    <div class="sec-head"><h2>Sound play</h2><span class="note">small instruments, listening spaces, noisy things</span></div>
+    <div class="sec-head"><h2>Sound play</h2><span class="note">things that make noise after you touch them</span></div>
     <div class="grid">
       <a class="card" data-tags="sound hub" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/">
         <span class="card-title">Sound Play</span>
-        <span class="card-desc">The front door to the little instruments below, in one listening room.</span>
+        <span class="card-desc">The shelf where the tiny noisemakers are hanging out. Enter at your own volume.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">hub</span></span>
       </a>
       <a class="card" data-tags="sound interactive kid-friendly" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/stardust-goblin-orchestra.html">
         <span class="card-title">Stardust Goblin Orchestra</span>
-        <span class="card-desc">Tap spells, wake colourful creatures, record a voice for the goblin choir.</span>
+        <span class="card-desc">A choir of tiny goblins needs your voice. Obviously.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">kid-friendly</span></span>
       </a>
       <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/behaviour-garden.html">
         <span class="card-title">Behaviour Garden</span>
-        <span class="card-desc">Seeded Brownian drift, weighted transitions, phase rules — same seed, same path.</span>
+        <span class="card-desc">Put in a seed. Watch the same little creature make the same weird choices.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
       <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/grain-garden.html">
         <span class="card-title">Grain Garden</span>
-        <span class="card-desc">Bring one small sound, search inside it by hand, let it keep growing after you stop.</span>
+        <span class="card-desc">Chuck in a sound. Dig into it. It keeps bubbling after you let go.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
       <a class="card" data-tags="sound interactive" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/resonator-garden.html">
         <span class="card-title">Resonator Garden</span>
-        <span class="card-desc">Tap a place in a sound; the fragment fades, the resonators keep remembering it.</span>
+        <span class="card-desc">Poke a sound. The ghost fades; the metal remembers.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span></span>
       </a>
       <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/sympathetic-network.html">
         <span class="card-title">Sympathetic Network</span>
-        <span class="card-desc">Tap one body — it wakes its neighbours, and they decide whether to answer.</span>
+        <span class="card-desc">Wake one wobbling thing, then watch it text all its mates.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
       <a class="card" data-tags="sound interactive generative variant" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/sympathetic-network-v2.html">
         <span class="card-title">Sympathetic Network V2</span>
-        <span class="card-desc">Tap empty ground to grow a new body; it wires itself to its three nearest neighbours.</span>
+        <span class="card-desc">Click bare ground to sprout another pal. It immediately gets social.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span><span class="tag">variant</span></span>
       </a>
       <a class="card" data-tags="sound interactive generative" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/weather-map.html">
         <span class="card-title">Weather Map</span>
-        <span class="card-desc">Move through a climate: pulse vs. chance, solitude vs. flocking.</span>
+        <span class="card-desc">A climate dial for tiny systems: will it flock? will it hide? do both.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
       <a class="card" data-tags="sound interactive generative variant" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/sound-play/weather-map-v2.html">
         <span class="card-title">Weather Map — Seasons</span>
-        <span class="card-desc">Click the field to change climate; roles settle into layers, then weather colours them.</span>
+        <span class="card-desc">Kick the weather over. The field changes moods and rearranges itself.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span><span class="tag">variant</span></span>
       </a>
     </div>
   </section>
 
   <section data-section>
-    <div class="sec-head"><h2>Live systems</h2><span class="note">things that listen to another system</span></div>
+    <div class="sec-head"><h2>Live systems</h2><span class="note">pages with their ear pressed to another machine</span></div>
     <div class="grid">
       <a class="card" data-tags="sound interactive live-data" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/radio/">
         <span class="card-title">Workspace Radio</span>
-        <span class="card-desc">A shortwave tuner: every project's stage, priority, and activity becomes a station.</span>
+        <span class="card-desc">The project pile translated into suspicious little radio stations.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">live / data</span></span>
       </a>
       <a class="card" data-tags="sound interactive companion" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/refleks-genlyd/">
         <span class="card-title">REFLEKS × GENLYD</span>
-        <span class="card-desc">Timed listening sessions — a sustained wash, optional tilt voice, nothing recorded about you.</span>
+        <span class="card-desc">A listening pocket with a long wash and an optional tilted voice. It keeps no diary about you.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">companion</span></span>
       </a>
     </div>
   </section>
 
   <section data-section>
-    <div class="sec-head"><h2>Reference</h2><span class="note">useful infrastructure masquerading as a page</span></div>
+    <div class="sec-head"><h2>Reference</h2><span class="note">boring-but-useful scaffolding in a fake moustache</span></div>
     <div class="grid">
       <a class="card" data-tags="reference tool" href="https://technicallytechnicaldesign.github.io/vaguely-finished-miniprojects/">
         <span class="card-title">Prompt Dictionary</span>
-        <span class="card-desc">Canonical agent phrasings, searchable, one copy button away.</span>
+        <span class="card-desc">A hoard of useful agent phrases: searchable, copyable, no ceremonial nonsense.</span>
         <span class="tags"><span class="tag">reference</span><span class="tag">tool</span></span>
       </a>
     </div>
   </section>
 
   <section data-section>
-    <div class="sec-head"><h2>Street terminal</h2><span class="note">poetry as executable space</span></div>
+    <div class="sec-head"><h2>Street terminal</h2><span class="note">a poem got loose in a terminal</span></div>
     <div class="grid">
       <a class="card" data-tags="sound interactive generative" href="rimedaemon/">
         <span class="card-title">RIME/DAEMON</span>
-        <span class="card-desc">A cyberpunk poetry console that opens into a living street of glyphs, daemons, click events, and an opt-in soundscape.</span>
+        <span class="card-desc">A terminal poem spills into a neon street: glyphs, daemons, things to click, optional noise.</span>
         <span class="tags"><span class="tag">sound</span><span class="tag">interactive</span><span class="tag">generative</span></span>
       </a>
     </div>
   </section>
 
-  <p class="empty" id="empty-state" aria-live="polite" hidden>Nothing in this drawer yet. Try another tag.</p>
+  <p class="empty" id="empty-state" aria-live="polite" hidden>Nothing crawled out. Try a different button.</p>
 
   <footer>
-    The public cards live in <a href="https://github.com/technicallytechnicaldesign/vaguely-finished-miniprojects"><code>technicallytechnicaldesign/vaguely-finished-miniprojects</code></a>.
-    RIME/DAEMON runs here as a browser-only static build: no account, no upload, no server-side poetry.
+    The public cards point into <a href="https://github.com/technicallytechnicaldesign/vaguely-finished-miniprojects"><code>technicallytechnicaldesign/vaguely-finished-miniprojects</code></a>.
+    RIME/DAEMON lives here as a browser-only static build: no account, no upload, no server-side poetry sewer.
   </footer>
 </main>
 
@@ -220,6 +256,10 @@
 
   filters.forEach((button) => {
     button.addEventListener("click", () => applyFilter(button.dataset.filter));
+  });
+
+  document.querySelectorAll(".tag").forEach((tag) => {
+    tag.dataset.tag = tag.textContent.trim().toLowerCase().replace(" / ", "-").replace(/\s+/g, "-");
   });
 
   applyFilter(activeFilter);
