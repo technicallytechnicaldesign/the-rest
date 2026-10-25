@@ -1092,14 +1092,19 @@ function StreetMode() {
   const districtRef = useRef<DistrictId>("underpass");
   const carriedWord = useRef("");
   const passage = useRef(0);
+  const coreCursor = useRef(0);
+  const generatedNext = useRef(true);
+  const previousStreetForm = useRef("");
+  const pendingMemory = useRef(false);
+  const [lastInteraction, setLastInteraction] = useState("");
   const soundscape = useRef<StreetSoundscape | null>(null);
   const [activeVerse, setActiveVerse] = useState<StreetVerse>({
     id: "core-0",
-    lines: [...DISTRICTS.underpass.opening],
-    source: "LOST PROPERTY / 01",
+    lines: [...IMMERSIVE_VERSES[0]],
+    source: "CORE CURRENT 01",
     kind: "CORE",
   });
-  const [displayLines, setDisplayLines] = useState<string[]>([...DISTRICTS.underpass.opening]);
+  const [displayLines, setDisplayLines] = useState<string[]>([...IMMERSIVE_VERSES[0]]);
   const [corruption, setCorruption] = useState<StreetCorruption | null>(null);
   const [figureHits, setFigureHits] = useState<Record<number, { effect: FigureEffect; stamp: number }>>({});
   const [figureTones, setFigureTones] = useState<Record<number, FigureTone>>({});
@@ -1108,7 +1113,7 @@ function StreetMode() {
   const effectTimers = useRef<number[]>([]);
   const [interfaceStatus, setInterfaceStatus] = useState("semantic current executable");
   const [surge, setSurge] = useState(0);
-  const displayLinesRef = useRef<string[]>([...DISTRICTS.underpass.opening]);
+  const displayLinesRef = useRef<string[]>([...IMMERSIVE_VERSES[0]]);
   const mutationTimers = useRef<number[]>([]);
   const mutationInFlight = useRef(false);
 
@@ -1154,6 +1159,7 @@ function StreetMode() {
   }, [soundOn]);
 
   const rememberWord = useCallback((word: string) => {
+    if (word && word !== carriedWord.current) pendingMemory.current = true;
     carriedWord.current = word;
     soundscape.current?.setWord(word);
   }, []);
@@ -1234,10 +1240,19 @@ function StreetMode() {
 
   function rewriteCurrent() {
     if (mutationInFlight.current || heldRef.current) return;
-    const next = streetVerse(districtRef.current, carriedWord.current, passage.current++);
-    if (revolveLines(next, [0, 1, 2], "a word returning")) {
-      setActiveVerse({ id: `memory-${Date.now()}`, lines: next, source: DISTRICTS[districtRef.current].address, kind: "GENERATED" });
+    const step = passage.current++;
+    if (carriedWord.current && (pendingMemory.current || step % 3 === 0)) {
+      const next = streetVerse(districtRef.current, carriedWord.current, step);
+      if (revolveLines(next, [0, 1, 2], "a word returning")) {
+        pendingMemory.current = false;
+        setActiveVerse({ id: `memory-${Date.now()}`, lines: next, source: DISTRICTS[districtRef.current].address, kind: "GENERATED" });
+      }
+      return;
     }
+    const generated = generateStreetVerse(previousStreetForm.current);
+    previousStreetForm.current = generated.form;
+    const mutation = buildStreetMutation([...displayLinesRef.current], generated.verse.lines);
+    revolveLines(mutation.next, mutation.affected, "semantic mutation");
   }
 
   function queueEffect(delay: number, action: () => void) {
@@ -1262,26 +1277,29 @@ function StreetMode() {
 
     const advanceVerse = () => {
       if (heldRef.current) return;
-      const nextVerse: StreetVerse = {
-        id: `memory-${Date.now()}`,
-        lines: streetVerse(districtRef.current, carriedWord.current, passage.current++),
-        source: DISTRICTS[districtRef.current].address,
-        kind: "GENERATED",
-      };
-
+      let nextVerse: StreetVerse;
+      if (generatedNext.current) {
+        const generated = generateStreetVerse(previousStreetForm.current);
+        previousStreetForm.current = generated.form;
+        nextVerse = generated.verse;
+      } else {
+        coreCursor.current = (coreCursor.current + 1) % IMMERSIVE_VERSES.length;
+        nextVerse = { id: `core-${coreCursor.current}-${Date.now()}`, lines: [...IMMERSIVE_VERSES[coreCursor.current]], source: `CORE CURRENT ${String(coreCursor.current + 1).padStart(2, "0")}`, kind: "CORE" };
+      }
       const eventLines = nextVerse.lines;
       const order = [0, 1, 2].sort(() => Math.random() - 0.5);
       const started = revolveLines(eventLines, order, "event abstraction");
       if (started) {
         sound("advance");
         setActiveVerse(nextVerse);
+        generatedNext.current = !generatedNext.current;
       }
     };
 
     const scheduleCycle = () => {
-      later(12500, rewriteCurrent);
-      later(29000, rewriteCurrent);
-      later(47000, () => {
+      later(6900, rewriteCurrent);
+      later(14800, rewriteCurrent);
+      later(25200, () => {
         advanceVerse();
         scheduleCycle();
       });
@@ -1327,6 +1345,7 @@ function StreetMode() {
                                              
     const roll = Math.random();
     const effect: FigureEffect = roll < 0.34 ? "slice" : roll < 0.68 ? "giggle" : "shift";
+    setLastInteraction(`figure-${index}-${effect}`);
     sound(effect);
 
     if (effect === "shift") {
@@ -1349,12 +1368,14 @@ function StreetMode() {
   }
 
   function strikePanel() {
+    setLastInteraction("verse");
     sound("distort");
     setPanelHit((current) => current + 1);
     queueEffect(620, () => setPanelHit((current) => (current > 0 ? current - 1 : 0)));
   }
 
   function disturbCurrent() {
+    setLastInteraction("road");
     sound("disturb");
     setSurge((current) => current + 1);
     rewriteCurrent();
@@ -1379,6 +1400,7 @@ function StreetMode() {
     <section
       className="immersive-street remembered-street"
       data-district={district}
+      data-last-interaction={lastInteraction}
       aria-label="Animated Street language visualization"
       onClick={routeStreetClick}
       onPointerMove={trackPointer}
@@ -1545,7 +1567,7 @@ function StreetMode() {
       </button>
 
       <p className="audio-error" role="status">{audioError}</p>
-      <p className="street-instruction">A WORD / AN ECHO / SOMETHING KEPT</p>
+      <p className="street-instruction">CLICK / TOUCH TO CORRUPT THE CURRENT</p>
     </section>
   );
 }
@@ -1562,7 +1584,7 @@ export default function Home() {
 
   useEffect(() => {
     function handleKeydown(event: KeyboardEvent) {
-      if (event.key === "Escape") setMode("console");
+      if (event.key === "Escape" && !event.defaultPrevented) setMode("console");
     }
     window.addEventListener("keydown", handleKeydown);
     return () => window.removeEventListener("keydown", handleKeydown);
@@ -1590,7 +1612,7 @@ export default function Home() {
       <header className="modebar" id="top">
         <span className="console-brand"><b>&gt;</b>RIMEDAEMON</span>
         <span className="mode-status">
-          {mode === "console" ? "CONSOLE / LANGUAGE ENGINE" : "STREET / THE CORNER THAT REMEMBERS"}
+          {mode === "console" ? "CONSOLE / LANGUAGE ENGINE" : "STREET / SEMANTIC SURFACE"}
         </span>
         <button
           type="button"
