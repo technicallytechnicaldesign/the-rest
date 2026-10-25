@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -13,7 +14,11 @@ import {
   createStreetSoundscape,
   type StreetSoundEvent,
   type StreetSoundscape,
-} from "./soundscape";
+  type SoundPulse,
+  type SoundMeter,
+} from "./memory-score";
+import RememberedCorner from "./remembered-corner";
+import { DISTRICTS, streetVerse, type DistrictId } from "./street-memory";
 
 type Channel = "street" | "babel" | "franchise" | "void";
 
@@ -1076,20 +1081,25 @@ type FigureTone = (typeof FIGURE_TONES)[number];
 const CLACK_KEYS = "abcdefghijklmnopqrstuvwxyz0123456789<>/\\|[]{}";
 
 function StreetMode() {
-                                                                             
-                                                                         
-  const [soundOn, setSoundOn] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try { return window.localStorage.getItem(SOUND_KEY) === "on"; } catch { return false; }
-  });
+  const [soundOn, setSoundOn] = useState(false);
+  const [audioError, setAudioError] = useState("");
+  const [audioStarting, setAudioStarting] = useState(false);
+  const [district, setDistrict] = useState<DistrictId>("underpass");
+  const [pulse, setPulse] = useState<SoundPulse | null>(null);
+  const [meter, setMeter] = useState<SoundMeter>({ rms: 0, peak: 0, state: "closed", voices: 0 });
+  const [held, setHeld] = useState(false);
+  const heldRef = useRef(false);
+  const districtRef = useRef<DistrictId>("underpass");
+  const carriedWord = useRef("");
+  const passage = useRef(0);
   const soundscape = useRef<StreetSoundscape | null>(null);
   const [activeVerse, setActiveVerse] = useState<StreetVerse>({
     id: "core-0",
-    lines: [...IMMERSIVE_VERSES[0]],
-    source: "CORE CURRENT 01",
+    lines: [...DISTRICTS.underpass.opening],
+    source: "LOST PROPERTY / 01",
     kind: "CORE",
   });
-  const [displayLines, setDisplayLines] = useState<string[]>([...IMMERSIVE_VERSES[0]]);
+  const [displayLines, setDisplayLines] = useState<string[]>([...DISTRICTS.underpass.opening]);
   const [corruption, setCorruption] = useState<StreetCorruption | null>(null);
   const [figureHits, setFigureHits] = useState<Record<number, { effect: FigureEffect; stamp: number }>>({});
   const [figureTones, setFigureTones] = useState<Record<number, FigureTone>>({});
@@ -1098,15 +1108,16 @@ function StreetMode() {
   const effectTimers = useRef<number[]>([]);
   const [interfaceStatus, setInterfaceStatus] = useState("semantic current executable");
   const [surge, setSurge] = useState(0);
-  const coreCursor = useRef(0);
-  const generatedNext = useRef(true);
-  const previousStreetForm = useRef("");
-  const displayLinesRef = useRef<string[]>([...IMMERSIVE_VERSES[0]]);
+  const displayLinesRef = useRef<string[]>([...DISTRICTS.underpass.opening]);
   const mutationTimers = useRef<number[]>([]);
   const mutationInFlight = useRef(false);
 
   function queueMutation(delay: number, action: () => void) {
-    mutationTimers.current.push(window.setTimeout(action, delay));
+    const timer = window.setTimeout(() => {
+      mutationTimers.current = mutationTimers.current.filter(id => id !== timer);
+      action();
+    }, delay);
+    mutationTimers.current.push(timer);
   }
 
                                                                               
@@ -1116,23 +1127,57 @@ function StreetMode() {
   }
 
   useEffect(() => {
-    if (!soundOn) return;
-    const engine = createStreetSoundscape();
+    const engine = createStreetSoundscape(setPulse, setAudioError);
     soundscape.current = engine;
-    engine.start();
-    return () => {
-      soundscape.current = null;
-      engine.stop();
-    };
+    return () => { soundscape.current = null; engine.stop(); };
+  }, []);
+
+  async function toggleSound(event: ReactMouseEvent<HTMLButtonElement>) {
+    event.stopPropagation();
+    const engine = soundscape.current;
+    if (!engine || audioStarting) return;
+    if (soundOn) { engine.stop(); setSoundOn(false); setPulse(null); return; }
+    engine.setDistrict(districtRef.current);
+    engine.setWord(carriedWord.current);
+    setAudioError(""); setAudioStarting(true);
+    const started = await engine.start();
+    if (soundscape.current !== engine) return;
+    setSoundOn(started); setAudioStarting(false);
+  }
+
+  useEffect(() => {
+    if (!soundOn) { setMeter({ rms: 0, peak: 0, state: "closed", voices: 0 }); return; }
+    const timer = window.setInterval(() => {
+      if (soundscape.current) setMeter(soundscape.current.measure());
+    }, 400);
+    return () => window.clearInterval(timer);
   }, [soundOn]);
 
-  function toggleSound(event: ReactMouseEvent<HTMLButtonElement>) {
-    event.stopPropagation();                                                               
-    setSoundOn((current) => {
-      const next = !current;
-      try { window.localStorage.setItem(SOUND_KEY, next ? "on" : "off"); } catch {                 }
-      return next;
-    });
+  const rememberWord = useCallback((word: string) => {
+    carriedWord.current = word;
+    soundscape.current?.setWord(word);
+  }, []);
+
+  function toggleHold() {
+    const next = !heldRef.current;
+    heldRef.current = next; setHeld(next);
+    if (next) {
+      mutationTimers.current.forEach(timer => window.clearTimeout(timer));
+      mutationTimers.current = []; mutationInFlight.current = false; setCorruption(null);
+      setInterfaceStatus("a moment held outside the current");
+    }
+  }
+
+  function visitDistrict(id: DistrictId) {
+    if (districtRef.current === id) return;
+    mutationTimers.current.forEach(timer => window.clearTimeout(timer));
+    mutationTimers.current = []; mutationInFlight.current = false; setCorruption(null);
+    districtRef.current = id; setDistrict(id);
+    soundscape.current?.setDistrict(id);
+    const next = [...DISTRICTS[id].opening];
+    displayLinesRef.current = next; setDisplayLines(next);
+    setActiveVerse({ id: `${id}-${Date.now()}`, lines: next, source: DISTRICTS[id].address, kind: "CORE" });
+    setInterfaceStatus("a different room in the same long sentence");
   }
 
   function revolveLines(nextLines: string[], order: number[], eventLabel: string) {
@@ -1188,16 +1233,19 @@ function StreetMode() {
   }
 
   function rewriteCurrent() {
-    if (mutationInFlight.current) return;
-    const current = [...displayLinesRef.current];
-    const generated = generateStreetVerse(previousStreetForm.current);
-    previousStreetForm.current = generated.form;
-    const mutation = buildStreetMutation(current, generated.verse.lines);
-    revolveLines(mutation.next, mutation.affected, "semantic mutation");
+    if (mutationInFlight.current || heldRef.current) return;
+    const next = streetVerse(districtRef.current, carriedWord.current, passage.current++);
+    if (revolveLines(next, [0, 1, 2], "a word returning")) {
+      setActiveVerse({ id: `memory-${Date.now()}`, lines: next, source: DISTRICTS[districtRef.current].address, kind: "GENERATED" });
+    }
   }
 
   function queueEffect(delay: number, action: () => void) {
-    effectTimers.current.push(window.setTimeout(action, delay));
+    const timer = window.setTimeout(() => {
+      effectTimers.current = effectTimers.current.filter(id => id !== timer);
+      action();
+    }, delay);
+    effectTimers.current.push(timer);
   }
 
   useEffect(() => () => {
@@ -1206,46 +1254,34 @@ function StreetMode() {
   }, []);
 
   useEffect(() => {
-    const timers: number[] = [];
+    const timers = new Set<number>();
     const later = (delay: number, action: () => void) => {
-      timers.push(window.setTimeout(action, delay));
+      const timer = window.setTimeout(() => { timers.delete(timer); action(); }, delay);
+      timers.add(timer);
     };
 
     const advanceVerse = () => {
-      let nextVerse: StreetVerse;
-      if (generatedNext.current) {
-        const generated = generateStreetVerse(previousStreetForm.current);
-        previousStreetForm.current = generated.form;
-        nextVerse = generated.verse;
-      } else {
-        coreCursor.current = (coreCursor.current + 1) % IMMERSIVE_VERSES.length;
-        nextVerse = {
-          id: `core-${coreCursor.current}-${Date.now()}`,
-          lines: [...IMMERSIVE_VERSES[coreCursor.current]],
-          source: `CORE CURRENT ${String(coreCursor.current + 1).padStart(2, "0")}`,
-          kind: "CORE",
-        };
-      }
+      if (heldRef.current) return;
+      const nextVerse: StreetVerse = {
+        id: `memory-${Date.now()}`,
+        lines: streetVerse(districtRef.current, carriedWord.current, passage.current++),
+        source: DISTRICTS[districtRef.current].address,
+        kind: "GENERATED",
+      };
 
-      const eventLines = nextVerse.lines.map((line, index) => (
-        line.trim().toLowerCase() === displayLinesRef.current[index]?.trim().toLowerCase()
-          ? resolveFrictionLine(line, pick(FLOW_LINES), index + 1)
-          : line
-      ));
-      nextVerse = { ...nextVerse, lines: eventLines };
+      const eventLines = nextVerse.lines;
       const order = [0, 1, 2].sort(() => Math.random() - 0.5);
       const started = revolveLines(eventLines, order, "event abstraction");
       if (started) {
         sound("advance");
         setActiveVerse(nextVerse);
-        generatedNext.current = !generatedNext.current;
       }
     };
 
     const scheduleCycle = () => {
-      later(6900, rewriteCurrent);
-      later(14800, rewriteCurrent);
-      later(25200, () => {
+      later(12500, rewriteCurrent);
+      later(29000, rewriteCurrent);
+      later(47000, () => {
         advanceVerse();
         scheduleCycle();
       });
@@ -1341,7 +1377,8 @@ function StreetMode() {
 
   return (
     <section
-      className="immersive-street"
+      className="immersive-street remembered-street"
+      data-district={district}
       aria-label="Animated Street language visualization"
       onClick={routeStreetClick}
       onPointerMove={trackPointer}
@@ -1434,7 +1471,11 @@ function StreetMode() {
         ))}
       </div>
 
+      <RememberedCorner district={district} lines={displayLines} engine={soundscape} pulse={pulse} meter={meter}
+        held={held} onHold={toggleHold} onDistrict={visitDistrict} onWord={rememberWord}
+        onEncounter={() => { sound("giggle"); rewriteCurrent(); }}>
       <div
+        onClick={strikePanel}
         className={`living-verse ${corruption ? "is-corrupting" : ""}${panelHit > 0 ? " is-distorted" : ""}`}
       >
         <small>
@@ -1465,6 +1506,8 @@ function StreetMode() {
         </footer>
       </div>
 
+      </RememberedCorner>
+
       <div className="deep-terminal" aria-hidden="true">
         <span>root@street:~$ ./language --render</span>
         <span>mapping meaning -&gt; light...</span>
@@ -1494,13 +1537,15 @@ function StreetMode() {
         type="button"
         onClick={toggleSound}
         aria-pressed={soundOn}
+        disabled={audioStarting}
         title="Generative audio, reacting to the street. Street mode only."
       >
         <i aria-hidden="true" />
-        <span>{soundOn ? "AUDIO DAEMON [ON]" : "AUDIO DAEMON [OFF]"}</span>
+        <span>{audioStarting ? "OPENING CHANNEL..." : soundOn ? "CLOSE AUDIO CHANNEL" : "OPEN AUDIO CHANNEL"}</span>
       </button>
 
-      <p className="street-instruction">CLICK / TOUCH TO CORRUPT THE CURRENT</p>
+      <p className="audio-error" role="status">{audioError}</p>
+      <p className="street-instruction">A WORD / AN ECHO / SOMETHING KEPT</p>
     </section>
   );
 }
@@ -1545,7 +1590,7 @@ export default function Home() {
       <header className="modebar" id="top">
         <span className="console-brand"><b>&gt;</b>RIMEDAEMON</span>
         <span className="mode-status">
-          {mode === "console" ? "CONSOLE / LANGUAGE ENGINE" : "STREET / SEMANTIC SURFACE"}
+          {mode === "console" ? "CONSOLE / LANGUAGE ENGINE" : "STREET / THE CORNER THAT REMEMBERS"}
         </span>
         <button
           type="button"

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><radialGradient id="night"><stop stop-color="#18332f"/><stop offset="1" stop-color="#04090d"/></radialGradient><linearGradient id="fade" x2="0" y2="1"><stop stop-color="#8ce9cf" stop-opacity=".05"/><stop offset="1" stop-color="#8ce9cf" stop-opacity=".28"/></linearGradient></defs>
+<rect width="1200" height="630" fill="#04090d"/><ellipse cx="905" cy="275" rx="350" ry="310" fill="url(#night)"/>
+<g stroke="#8ce9cf" stroke-opacity=".09"><path d="M600 560L910 230L1200 560M670 600L910 230L1150 630M770 630L910 230L1020 630M600 470H1200M650 410H1170M710 350H1110M755 300H1065"/></g>
+<path d="M54 104H1146M54 552H1146" stroke="#8ce9cf" stroke-opacity=".25"/>
+<text x="55" y="73" fill="#8ce9cf" font-family="Consolas,monospace" font-size="17" letter-spacing="5">RIME / DAEMON</text>
+<text x="1145" y="73" text-anchor="end" fill="#8da69b" font-family="Consolas,monospace" font-size="11" letter-spacing="2">A SHORT WALK THROUGH THE STATIC</text>
+<text x="54" y="184" fill="#8ce9cf" font-family="Consolas,monospace" font-size="12" letter-spacing="3">UNDERPASS / KM 00.13</text>
+<g fill="#e0e8e4" font-family="Georgia,serif" font-size="62"><text x="50" y="275">The corner</text><text x="50" y="351">that remembers.</text></g>
+<text x="55" y="411" fill="#9fb7ab" font-family="Consolas,monospace" font-size="15">A word. An echo. Something kept.</text>
+<text x="55" y="506" fill="#8ce9cf" font-family="Consolas,monospace" font-size="12" letter-spacing="1.8">POETRY / GENERATIVE SOUND / LOST PROPERTY</text>
+<g transform="translate(665 135) scale(1.9)" fill="none" stroke="#8ce9cf">
+<ellipse cx="120" cy="90" rx="91" ry="44" stroke-dasharray="1 9" opacity=".28"/>
+<path d="M117 81C82 14 28 37 24 61C45 59 63 93 104 99C57 88 35 111 49 137C75 113 99 140 117 97M123 81C158 14 212 37 216 61C195 59 177 93 136 99C183 88 205 111 191 137C165 113 141 140 123 97" fill="url(#fade)"/>
+<path d="M105 83L48 58M102 94L63 113M76 65L80 84M135 83L192 58M138 94L177 113M164 65L160 84" opacity=".5"/>
+<path d="M117 82L120 119L123 82M118 77L109 60M122 77L132 59"/><circle cx="120" cy="80" r="5" fill="#8ce9cf"/><circle cx="120" cy="80" r="13" opacity=".3"/>
+</g>
+<text x="893" y="484" text-anchor="middle" fill="#8ce9cf" font-family="Consolas,monospace" font-size="12" letter-spacing="5">MOTH / STILL HERE</text>
+<text x="55" y="591" fill="#809b92" font-family="Consolas,monospace" font-size="12" letter-spacing="2">NOTHING IS LOST WHILE SOMETHING IS LOOKING.</text>
+</svg>
