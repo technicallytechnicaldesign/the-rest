@@ -18,7 +18,7 @@ import {
   type SoundMeter,
 } from "./memory-score";
 import RememberedCorner from "./remembered-corner";
-import { DISTRICTS, streetVerse, type DistrictId } from "./street-memory";
+import { DISTRICTS, streetVerse, collectLexeme, weaveWords, type DistrictId, type ResidentWord } from "./street-memory";
 
 type Channel = "street" | "babel" | "franchise" | "void";
 
@@ -1091,6 +1091,13 @@ function StreetMode() {
   const heldRef = useRef(false);
   const districtRef = useRef<DistrictId>("underpass");
   const carriedWord = useRef("");
+  const scoreWord = useRef("");
+  const stage = useRef<HTMLElement | null>(null);
+  const residentCursor = useRef(0);
+  const [residentWords, setResidentWords] = useState<Record<number, {word: string; stamp: number}>>({});
+  const [scoreSeed, setScoreSeed] = useState("");
+  const compiledPending = useRef<{words: string[]; lines: string[]} | null>(null);
+  const daemonCurrentUntil = useRef(0);
   const passage = useRef(0);
   const coreCursor = useRef(0);
   const generatedNext = useRef(true);
@@ -1143,7 +1150,7 @@ function StreetMode() {
     if (!engine || audioStarting) return;
     if (soundOn) { engine.stop(); setSoundOn(false); setPulse(null); return; }
     engine.setDistrict(districtRef.current);
-    engine.setWord(carriedWord.current);
+    engine.setWord(scoreWord.current || carriedWord.current);
     setAudioError(""); setAudioStarting(true);
     const started = await engine.start();
     if (soundscape.current !== engine) return;
@@ -1161,6 +1168,7 @@ function StreetMode() {
   const rememberWord = useCallback((word: string) => {
     if (word && word !== carriedWord.current) pendingMemory.current = true;
     carriedWord.current = word;
+    scoreWord.current = word;
     soundscape.current?.setWord(word);
   }, []);
 
@@ -1171,7 +1179,55 @@ function StreetMode() {
       mutationTimers.current.forEach(timer => window.clearTimeout(timer));
       mutationTimers.current = []; mutationInFlight.current = false; setCorruption(null);
       setInterfaceStatus("a moment held outside the current");
+    } else if (compiledPending.current) {
+      const packet = compiledPending.current; compiledPending.current = null;
+      deliverCompiled(packet);
     }
+  }
+
+  function gatherResident(): ResidentWord {
+    const scene = stage.current;
+    const cursor = residentCursor.current++;
+    const word = collectLexeme(displayLinesRef.current, cursor * 3 + 1);
+    if (!scene) return {source: "CURRENT", word, x: 50, y: 32};
+    const bounds = scene.getBoundingClientRect();
+    const figures = [...scene.querySelectorAll<HTMLElement>(".shadow-figure")].map(element => ({element, rect: element.getBoundingClientRect()})).filter(item => {
+      const y = item.rect.top - bounds.top;
+      return y > bounds.height * .18 && y < bounds.height * .66 && Number(getComputedStyle(item.element).opacity) > .1;
+    });
+    if (!figures.length) return {source: "CURRENT", word, x: 50, y: 32};
+    const target = figures[cursor % figures.length];
+    const index = Number(target.element.dataset.figure);
+    const stamp = Date.now();
+    setResidentWords(current => ({...current, [index]: {word, stamp}}));
+    sound("negotiate");
+    queueEffect(2600, () => setResidentWords(current => {
+      if (current[index]?.stamp !== stamp) return current;
+      const next = {...current}; delete next[index]; return next;
+    }));
+    const margin = bounds.width < 700 ? 40 : 17;
+    const x = Math.min(100 - margin, Math.max(margin, (target.rect.left + target.rect.width / 2 - bounds.left) / bounds.width * 100));
+    const y = Math.min(46, Math.max(22, (target.rect.top - bounds.top) / bounds.height * 100 - 7));
+    return {source: `R${String(index + 1).padStart(2, "0")}`, word, x, y};
+  }
+
+  function deliverCompiled(packet: {words: string[]; lines: string[]}) {
+    mutationTimers.current.forEach(timer => window.clearTimeout(timer));
+    mutationTimers.current = []; mutationInFlight.current = false; setCorruption(null);
+    pendingMemory.current = false;
+    daemonCurrentUntil.current = Date.now() + 12000;
+    setActiveVerse({id: `daemon-${Date.now()}`, lines: packet.lines, source: `MOTH://COMPILE / ${packet.words.length} LEXEMES`, kind: "GENERATED"});
+    revolveLines(packet.lines, [0, 1, 2], "lexemes joined");
+  }
+
+  function compileWords(words: string[]) {
+    const packet = {words: [...words], lines: weaveWords(words, passage.current++)};
+    scoreWord.current = words.join(" / "); setScoreSeed(scoreWord.current);
+    soundscape.current?.setWord(scoreWord.current);
+    sound("shift");
+    if (heldRef.current) { compiledPending.current = packet; return {lines: packet.lines, delivered: false}; }
+    deliverCompiled(packet);
+    return {lines: packet.lines, delivered: true};
   }
 
   function visitDistrict(id: DistrictId) {
@@ -1239,7 +1295,7 @@ function StreetMode() {
   }
 
   function rewriteCurrent() {
-    if (mutationInFlight.current || heldRef.current) return;
+    if (mutationInFlight.current || heldRef.current || Date.now() < daemonCurrentUntil.current) return;
     const step = passage.current++;
     if (carriedWord.current && (pendingMemory.current || step % 3 === 0)) {
       const next = streetVerse(districtRef.current, carriedWord.current, step);
@@ -1276,7 +1332,7 @@ function StreetMode() {
     };
 
     const advanceVerse = () => {
-      if (heldRef.current) return;
+      if (heldRef.current || Date.now() < daemonCurrentUntil.current) return;
       let nextVerse: StreetVerse;
       if (generatedNext.current) {
         const generated = generateStreetVerse(previousStreetForm.current);
@@ -1398,9 +1454,11 @@ function StreetMode() {
 
   return (
     <section
+      ref={stage}
       className="immersive-street remembered-street"
       data-district={district}
       data-last-interaction={lastInteraction}
+      data-score-words={scoreSeed}
       aria-label="Animated Street language visualization"
       onClick={routeStreetClick}
       onPointerMove={trackPointer}
@@ -1459,6 +1517,7 @@ function StreetMode() {
                 key={patch}
               >
                 <i /><b /><u /><s /><code>{patch}</code>
+                {residentWords[index] && <em className="resident-word">λ {residentWords[index].word}</em>}
               </div>
             );
           })}
@@ -1495,7 +1554,7 @@ function StreetMode() {
 
       <RememberedCorner district={district} lines={displayLines} engine={soundscape} pulse={pulse} meter={meter}
         held={held} onHold={toggleHold} onDistrict={visitDistrict} onWord={rememberWord}
-        onEncounter={() => { sound("giggle"); rewriteCurrent(); }}>
+        onGather={gatherResident} onCompile={compileWords}>
       <div
         onClick={strikePanel}
         className={`living-verse ${corruption ? "is-corrupting" : ""}${panelHit > 0 ? " is-distorted" : ""}`}

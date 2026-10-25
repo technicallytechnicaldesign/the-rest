@@ -1,6 +1,7 @@
 export type DistrictId = "underpass" | "exchange" | "chapel";
 export type Transmission = { id: string; district: DistrictId; lines: string[]; time: string; word: string };
-export type StreetMemory = { version: 1; visits: number; word: string; encounters: number; transmissions: Transmission[] };
+export type StreetMemory = { version: 1; visits: number; word: string; words: string[]; encounters: number; transmissions: Transmission[] };
+export type ResidentWord = { source: string; word: string; x: number; y: number };
 export const MEMORY_KEY = "rimedaemon.street.memory.v1";
 
 export const DISTRICTS = {
@@ -9,7 +10,7 @@ export const DISTRICTS = {
     description: "For things the city has forgotten how to name.",
     instrument: "felt keys / rain on copper / a low electrical hum",
     root: 55, degrees: [0, 3, 7, 10, 14], chord: [0, 7, 14, 15], interval: 1.15,
-    nouns: ["the last train", "a coat without a body", "the night porter", "a small unlicensed moon", "the rain", "a moth made of punctuation"],
+    nouns: ["the last train", "a coat without a body", "the night porter", "a small unlicensed moon", "the rain", "a wandering lexical process"],
     actions: ["leaves a light on", "learns to wait", "comes back without a name", "holds the door for nobody", "sleeps in the return slot", "keeps the city breathing"],
     endings: ["Someone has mended the dark with copper wire.", "There is still a little warmth in the machinery.", "Nothing is lost while something is looking.", "The tunnel answers one note later.", "Above us, the traffic goes on being weather.", "We let the silence finish its sentence."],
     opening: ["The last train left its name under the bridge.", "A small process is keeping it warm.", "You arrive with nothing you need to explain."],
@@ -41,7 +42,7 @@ export function cleanWord(value: string) {
 }
 
 export function freshMemory(): StreetMemory {
-  return { version: 1, visits: 0, word: "", encounters: 0, transmissions: [] };
+  return { version: 1, visits: 0, word: "", words: [], encounters: 0, transmissions: [] };
 }
 
 export function readMemory(raw: string | null): StreetMemory {
@@ -53,6 +54,7 @@ export function readMemory(raw: string | null): StreetMemory {
       visits: Number.isSafeInteger(value.visits) && value.visits >= 0 ? value.visits : 0,
       encounters: Number.isSafeInteger(value.encounters) && value.encounters >= 0 ? value.encounters : 0,
       word: typeof value.word === "string" ? cleanWord(value.word) : "",
+      words: rememberWords([], Array.isArray(value.words) ? value.words.filter((v: unknown): v is string => typeof v === "string") : typeof value.word === "string" ? [value.word] : []),
       transmissions: Array.isArray(value.transmissions) ? value.transmissions.filter((t: Transmission) =>
         t && typeof t.id === "string" && t.id.length < 100 && Object.hasOwn(DISTRICTS, t.district) &&
         Array.isArray(t.lines) && t.lines.length === 3 && t.lines.every(l => typeof l === "string" && l.length <= 500) &&
@@ -89,7 +91,7 @@ export function daemonSpeech(memory: StreetMemory, district: DistrictId): string
   const word = memory.word ? `“${memory.word}”` : "a word";
   const lines = district === "exchange" ? [
     `They asked me to put a price on ${word}. I said it was already spoken for.`,
-    "The clerk gave me a receipt for being here. I folded it into a wing.",
+    "The clerk gave me a receipt for being here. I folded it into a routing table.",
     `Don't worry. ${word} is small enough to get through customs.`,
   ] : district === "chapel" ? [
     `I brought ${word} somewhere it won't have to explain itself.`,
@@ -102,6 +104,37 @@ export function daemonSpeech(memory: StreetMemory, district: DistrictId): string
     "I was built to collect errors. You'd be surprised how many are just unfinished things.",
   ];
   return lines[(memory.encounters - 1) % lines.length];
+}
+
+export function rememberWords(previous: string[], incoming: string[]): string[] {
+  const words = [...previous, ...incoming].map(cleanWord).filter(Boolean);
+  const seen = new Set<string>();
+  const kept: string[] = [];
+  for (let index = words.length - 1; index >= 0; index -= 1) {
+    const key = words[index].toLocaleLowerCase();
+    if (!seen.has(key)) { seen.add(key); kept.push(words[index]); }
+    if (kept.length === 16) break;
+  }
+  return kept.reverse();
+}
+
+export function collectLexeme(lines: string[], cursor: number): string {
+  const common = new Set(["this", "that", "with", "once", "from", "have", "they", "then", "where", "there", "their", "what", "when", "into", "which", "your", "through", "before", "after", "some", "been", "will"]);
+  const tokens = lines.join(" ").match(/[\p{L}][\p{L}'-]{2,19}/gu) ?? [];
+  const words = [...new Set(tokens.map(word => word.toLocaleLowerCase()).filter(word => !common.has(word)))];
+  return words.length ? words[Math.abs(cursor) % words.length] : "signal";
+}
+
+export function weaveWords(incoming: string[], step = 0): string[] {
+  const words = rememberWords([], incoming).slice(-4);
+  const [a = "signal", b = a, c = b, d] = words;
+  const forms = [
+    [`“${a}” enters the Street as a borrowed instruction.`, `a mouth lends “${b}” to “${c}”.`, d ? `“${d}” comes back wearing a different voice.` : "no single mouth owns the signal."],
+    [`they tried to route “${a}” through one obedient mouth.`, `“${b}” forked. “${c}” found another way.`, d ? `somewhere below the icons, “${d}” is still running.` : "the daemon leaves the difference alive."],
+    [`the city mishears “${a}” and builds a door.`, `“${b}” crosses. “${c}” holds it open.`, d ? `no checkpoint has a field for “${d}”.` : "an error becomes a place to meet."],
+    [`“${a}” was a private thought until the crossing.`, `now “${b}” speaks with “${c}” inside it.`, d ? `“${d}” is what the echo adds.` : "the packet returns with more than it carried."],
+  ];
+  return forms[Math.abs(step) % forms.length];
 }
 
 function xml(value: string) {

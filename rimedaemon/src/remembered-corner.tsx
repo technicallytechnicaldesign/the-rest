@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import { DISTRICTS, MEMORY_KEY, cleanWord, daemonSpeech, freshMemory, readMemory, transmissionSvg, type DistrictId, type StreetMemory, type Transmission } from "./street-memory";
+import { DISTRICTS, MEMORY_KEY, cleanWord, freshMemory, readMemory, rememberWords, transmissionSvg, type DistrictId, type StreetMemory, type Transmission, type ResidentWord } from "./street-memory";
 import { type SoundPulse, type SoundMeter, type StreetSoundscape } from "./memory-score";
+import WordDaemon from "./word-daemon";
 
 type Props = {
   children: ReactNode;
@@ -14,7 +15,8 @@ type Props = {
   onHold: () => void;
   onDistrict: (id: DistrictId) => void;
   onWord: (word: string) => void;
-  onEncounter: () => void;
+  onGather: () => ResidentWord;
+  onCompile: (words: string[]) => {lines: string[]; delivered: boolean};
 };
 
 function download(t: Transmission) {
@@ -25,31 +27,19 @@ function download(t: Transmission) {
   anchor.click(); window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-function MothGlyph() { return <svg viewBox="0 0 240 180" fill="none" aria-hidden="true">
-          <ellipse className="moth-orbit" cx="120" cy="90" rx="91" ry="44" stroke="currentColor" strokeDasharray="1 9" />
-          <g className="moth-wing wing-left"><path d="M117 81C82 14 28 37 24 61C45 59 63 93 104 99C57 88 35 111 49 137C75 113 99 140 117 97" stroke="currentColor" fill="currentColor" fillOpacity=".06"/><path d="M105 83L48 58M102 94L63 113M76 65L80 84" stroke="currentColor" opacity=".45"/></g>
-          <g className="moth-wing wing-right"><path d="M123 81C158 14 212 37 216 61C195 59 177 93 136 99C183 88 205 111 191 137C165 113 141 140 123 97" stroke="currentColor" fill="currentColor" fillOpacity=".06"/><path d="M135 83L192 58M138 94L177 113M164 65L160 84" stroke="currentColor" opacity=".45"/></g>
-          <path d="M117 82L120 119L123 82M118 77L109 60M122 77L132 59" stroke="currentColor" strokeWidth="1.5"/><circle cx="120" cy="80" r="5" fill="currentColor"/><circle cx="120" cy="80" r="13" stroke="currentColor" opacity=".3"/>
-          <path d="M28 155H73M167 155H212M120 143V165" stroke="currentColor" opacity=".3"/><text x="120" y="173" textAnchor="middle" fill="currentColor" fontSize="7" fontFamily="monospace" letterSpacing="3">LOST / FOUND</text>
-        </svg>; }
-
-export default function RememberedCorner({ children, district, lines, engine, pulse, meter, held, onHold, onDistrict, onWord, onEncounter }: Props) {
+export default function RememberedCorner({ children, district, lines, engine, pulse, meter, held, onHold, onDistrict, onWord, onGather, onCompile }: Props) {
   const [memory, setMemory] = useState<StreetMemory>(freshMemory);
   const memoryRef = useRef(memory);
   const initialized = useRef(false);
-  const [input, setInput] = useState("");
   const [storageNote, setStorageNote] = useState("");
   const [pocketOpen, setPocketOpen] = useState(false);
-  const [mothOpen, setMothOpen] = useState(false);
   const [mixOpen, setMixOpen] = useState(false);
   const [placesOpen, setPlacesOpen] = useState(false);
-  const mothButton = useRef<HTMLButtonElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const [notice, setNotice] = useState("");
   const [volume, setVolume] = useState(52);
   const [density, setDensity] = useState(38);
-  const [speaking, setSpeaking] = useState(false);
   const noticeTimer = useRef<number | null>(null);
-  const speakingTimer = useRef<number | null>(null);
   const d = DISTRICTS[district];
 
   function persist(next: StreetMemory) {
@@ -73,7 +63,6 @@ export default function RememberedCorner({ children, district, lines, engine, pu
 
   useEffect(() => () => {
     if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current);
-    if (speakingTimer.current !== null) window.clearTimeout(speakingTimer.current);
   }, []);
 
   function say(message: string) {
@@ -82,20 +71,18 @@ export default function RememberedCorner({ children, district, lines, engine, pu
     noticeTimer.current = window.setTimeout(() => setNotice(""), 6500);
   }
 
-  function encounter() {
-    persist({ ...memoryRef.current, encounters: memoryRef.current.encounters + 1 });
-    onEncounter(); setSpeaking(true);
-    if (speakingTimer.current !== null) window.clearTimeout(speakingTimer.current);
-    speakingTimer.current = window.setTimeout(() => setSpeaking(false), 2200);
+  function giveWord(value: string) {
+    const word = cleanWord(value);
+    if (!word) return;
+    const current = memoryRef.current;
+    persist({ ...current, word, words: rememberWords(current.words, [word]), encounters: current.encounters + 1 });
+    onWord(word);
   }
 
-  function giveWord(event: React.FormEvent) {
-    event.preventDefault();
-    const word = cleanWord(input);
-    if (!word) return;
-    persist({ ...memoryRef.current, word, encounters: Math.max(1, memoryRef.current.encounters + 1) });
-    onWord(word); onEncounter(); setInput("");
-    say(`MOTH has “${word}”. Listen for it coming back.`);
+  function compile(words: string[]) {
+    const current = memoryRef.current;
+    persist({ ...current, words: rememberWords(current.words, words) });
+    return onCompile(words);
   }
 
   function keep() {
@@ -114,14 +101,14 @@ export default function RememberedCorner({ children, district, lines, engine, pu
   }
 
   return <div className="remembered-corner" onClick={event => event.stopPropagation()} onKeyDown={event => {
-    if (event.key === "Escape" && (mothOpen || pocketOpen || mixOpen || placesOpen)) {
+    if (event.key === "Escape" && (pocketOpen || mixOpen || placesOpen)) {
       event.preventDefault(); event.stopPropagation();
-      setMothOpen(false); setPocketOpen(false); setMixOpen(false); setPlacesOpen(false);
-      mothButton.current?.focus();
+      setPocketOpen(false); setMixOpen(false); setPlacesOpen(false);
+      menuButton.current?.focus();
     }
   }}>
     <div className="place-controls">
-      <button type="button" className="place-toggle" aria-expanded={placesOpen} onClick={() => setPlacesOpen(!placesOpen)}>WALK / {d.name} ↗</button>
+      <button ref={menuButton} type="button" className="place-toggle" aria-expanded={placesOpen} onClick={() => setPlacesOpen(!placesOpen)}>WALK / {d.name} ↗</button>
       {placesOpen && <nav className="district-nav" aria-label="Walk the Street">
         {(Object.keys(DISTRICTS) as DistrictId[]).map(id => <button key={id} type="button" aria-pressed={district === id} onClick={() => { onDistrict(id); engine.current?.setDistrict(id); setPlacesOpen(false); }}>
           <span>{DISTRICTS[id].number}</span><b>{DISTRICTS[id].name}</b>
@@ -131,19 +118,7 @@ export default function RememberedCorner({ children, district, lines, engine, pu
 
     <div className="corner-address"><span>{d.address}</span><h1>{d.name}</h1><p>{d.description}</p></div>
 
-    <button ref={mothButton} className={`moth-beacon${speaking ? " is-speaking" : ""}`} type="button" aria-label="Approach MOTH" aria-expanded={mothOpen} aria-controls="moth-encounter" onClick={() => { setMothOpen(!mothOpen); if (!mothOpen) { if (memoryRef.current.encounters > 0) encounter(); else onEncounter(); } }}>
-      <MothGlyph /><span>MOTH / LOST PROPERTY</span>
-    </button>
-    {mothOpen && <aside id="moth-encounter" className={`moth-encounter${speaking ? " is-speaking" : ""}`} aria-label="MOTH, lost-property process">
-      <header className="encounter-heading"><span>LOST PROPERTY / MOTH</span><button type="button" aria-label="Leave MOTH" onClick={() => { setMothOpen(false); mothButton.current?.focus(); }}>×</button></header>
-      <button className="moth-body" type="button" onClick={encounter} aria-label="Talk to MOTH">
-
-        <span>MOTH <i /> <small>touch to listen</small></span>
-      </button>
-      <div className="moth-words"><span>RESIDENT PROCESS / STILL HERE</span><p key={`${district}-${memory.encounters}`}>{daemonSpeech(memory, district)}</p></div>
-      <form onSubmit={giveWord} className="word-offering"><label htmlFor="moth-word">LEAVE A WORD IN ITS KEEPING</label><div><input id="moth-word" value={input} onChange={event => setInput(event.target.value)} maxLength={32} placeholder={memory.word || "something worth keeping"} autoComplete="off" /><button type="submit" disabled={!cleanWord(input)} aria-label="Give your word to MOTH">↗</button></div></form>
-      {memory.word && <small className="carried-word">CARRYING <b>{memory.word}</b></small>}
-    </aside>}
+    <WordDaemon knownWord={memory.word || memory.words[memory.words.length - 1] || ""} engine={engine} onGather={onGather} onOffer={giveWord} onCompile={compile} />
 
     <div className="corner-poem">{children}</div>
     <div className="current-actions"><button type="button" onClick={onHold} aria-pressed={held}>{held ? "LET IT FLOW ↗" : "STAY WITH THESE LINES ‖"}</button><button type="button" onClick={keep}>KEEP THIS MOMENT +</button></div>

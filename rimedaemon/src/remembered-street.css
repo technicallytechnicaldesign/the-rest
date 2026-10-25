@@ -3,7 +3,7 @@
 .remembered-street[data-district="exchange"] { --acid: #ffb000; --signal: #d9a7ff; --rule: #ffb00038; }
 .remembered-street[data-district="chapel"] { --acid: #b6a3ff; --signal: #63ffcc; --rule: #b6a3ff38; }
 .remembered-corner { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-.remembered-corner button, .remembered-corner input, .remembered-corner label, .moth-encounter, .pocket-panel, .score-desk { pointer-events: auto; }
+.remembered-corner button, .remembered-corner input, .remembered-corner label, .pocket-panel, .score-desk { pointer-events: auto; }
 .remembered-corner button { cursor: pointer; }
 .corner-poem { display: contents; }
 .corner-poem .living-verse { bottom: 91px; pointer-events: auto; }
@@ -16,30 +16,12 @@
 .district-nav button b { font-weight: 400; }
 .district-nav button span { opacity: .5; font-size: 8px; }
 .district-nav button:hover, .district-nav button[aria-pressed="true"] { color: var(--acid); background: color-mix(in srgb,var(--acid) 10%,transparent); }
-.moth-beacon { position: absolute; left: 12%; top: 38%; width: 112px; padding: 0; color: var(--acid); border: 0; background: transparent; filter: drop-shadow(0 0 7px color-mix(in srgb,var(--acid) 30%,transparent)); }
-.moth-beacon svg { width: 112px; height: 88px; display: block; overflow: visible; }
-.moth-beacon > span { display: block; margin-top: 3px; color: var(--acid); font: 6px/1.4 Consolas,monospace; letter-spacing: .1em; }
-.moth-beacon:hover, .moth-beacon[aria-expanded="true"] { filter: drop-shadow(0 0 12px var(--acid)); }
-.moth-wing { transform-origin: 120px 87px; animation: mothBreathe 9s ease-in-out infinite; }
-.wing-right { animation-delay: -.4s; }
-.moth-orbit { transform-origin: center; animation: mothOrbit 60s linear infinite; }
-.is-speaking .moth-wing { animation-duration: 1.1s; }
-.moth-encounter { position: absolute; left: 18px; top: 68px; width: min(320px,calc(100% - 36px)); max-height: calc(100% - 175px); overflow-y: auto; padding: 14px 16px; border: 1px solid var(--acid); background: #020703ed; backdrop-filter: blur(6px); box-shadow: 0 10px 35px #0008; z-index: 15; }
-.encounter-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--rule); padding-bottom: 8px; color: var(--acid); font: 8px/1.4 Consolas,monospace; letter-spacing: .08em; }
-.encounter-heading button { flex-shrink: 0; min-width: 34px; min-height: 34px; border: 0; color: var(--acid); background: transparent; font-size: 23px; }
-.moth-body { color: var(--acid); background: transparent; border: 0; padding: 12px 0; text-align: left; }
-.moth-body > span { font: 10px/1.5 Consolas,monospace; letter-spacing: .1em; }
-.moth-body small { margin-left: 7px; color: var(--steel); font-size: 8px; }
-.moth-words > span { color: var(--steel); font: 7px/1.4 Consolas,monospace; letter-spacing: .1em; }
-.moth-words p { margin: 10px 0 16px; color: var(--paper); font: 12px/1.7 Consolas,monospace; animation: memoryArrives .6s ease-out; }
 .word-offering label { color: var(--steel); display: block; font: 7px/1.5 Consolas,monospace; letter-spacing: .09em; }
 .word-offering > div { display: flex; border-bottom: 1px solid var(--rule); margin-top: 7px; }
 .word-offering input { min-width: 0; width: 100%; padding: 9px 0; border: 0; background: transparent; color: var(--acid); font: 11px/1.5 Consolas,monospace; }
 .word-offering input::placeholder { color: var(--steel); opacity: .65; }
 .word-offering button { min-width: 40px; min-height: 40px; border: 0; background: transparent; color: var(--acid); font-size: 22px; }
 .word-offering button:disabled { opacity: .25; cursor: default; }
-.carried-word { display: block; color: var(--steel); font: 7px/1.6 Consolas,monospace; margin-top: 12px; }
-.carried-word b { font-weight: 400; color: var(--acid); margin-left: 10px; font-size: 10px; overflow-wrap: anywhere; }
 .current-actions { position: absolute; left: 50%; bottom: 51px; transform: translateX(-50%); display: flex; gap: 8px; }
 .current-actions button { min-height: 28px; padding: 5px 9px; font-size: 7px; }
 .current-actions button:hover, .current-actions button[aria-pressed="true"] { background: var(--acid); color: var(--ink); }
@@ -74,20 +56,13 @@
 .pocket-list article small { color: var(--acid); font: 8px/1.4 Consolas,monospace; }
 .pocket-list article p, .empty-pocket { color: var(--paper); font: 14px/1.6 Georgia,serif; margin: 10px 0; overflow-wrap: anywhere; }
 .pocket-list article button { min-height: 38px; padding: 8px; border: 1px solid var(--rule); color: var(--acid); background: transparent; font: 8px/1.5 Consolas,monospace; }
-@keyframes mothBreathe { 0%,100% { transform: scaleX(1) translateY(0); } 50% { transform: scaleX(.86) translateY(-4px); } }
-@keyframes mothOrbit { to { transform: rotate(360deg); } }
-@keyframes memoryArrives { from { opacity: .2; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 @media (max-width: 700px) {
   .shell.shell[data-mode="street"] { min-height: 520px; }
   .immersive-street.remembered-street { min-height: 477px; }
   .place-controls { top: 10px; right: 10px; }
   .place-toggle { max-width: 200px; font-size: 7px; min-height: 30px; padding: 7px; }
   .remembered-street .semantic-horizon { display: none; }
-  .moth-beacon { left: 7%; top: 32%; width: 75px; }
-  .moth-beacon svg { width: 75px; height: 61px; }
-  .moth-beacon > span { font-size: 5px; }
   .word-offering input { font-size: 16px; }
-  .moth-encounter { top: 52px; left: 10px; width: min(300px,calc(100% - 20px)); max-height: calc(100% - 170px); }
   .corner-poem .living-verse { bottom: 86px; width: calc(100% - 24px); }
   .current-actions { bottom: 50px; gap: 6px; white-space: nowrap; }
   .current-actions button { font-size: 6px; }
@@ -99,6 +74,31 @@
   .score-desk { right: 10px; bottom: 49px; width: min(300px,calc(100% - 20px)); }
   .pocket-panel { top: 48px; right: 10px; bottom: 50px; width: calc(100% - 20px); }
 }
-@media (prefers-reduced-motion: reduce) { .moth-wing, .moth-orbit, .moth-words p { animation: none !important; } }
 
 .remembered-street .shadow-processes { overflow: clip; }
+
+.remembered-street .word-daemon { position: absolute; display: flex; align-items: center; gap: 7px; z-index: 13; width: max-content; max-width: 80vw; color: var(--violet); opacity: 1; pointer-events: none; animation: none; transform: translate(-50%,-50%); transition: left 1.35s ease-in-out, top 1.35s ease-in-out; font: 700 clamp(8px,.82vw,12px)/1 Consolas,monospace; text-shadow: 0 0 10px currentColor; }
+.remembered-street .word-daemon > b { font: inherit; letter-spacing: .04em; }
+.remembered-street .word-daemon > i { display: block; flex-shrink: 0; width: 44px; height: 2px; background: currentColor; box-shadow: 0 0 9px currentColor; }
+.remembered-street .word-daemon.phase-arriving { animation: lexicalArrival 2.4s ease-out both; }
+.remembered-street .word-daemon.phase-departing { animation: lexicalDeparture 2.8s ease-in both; }
+.daemon-service { position: absolute; top: 22px; left: 50%; width: min(286px,80vw); transform: translateX(-50%); text-align: left; color: var(--steel); font: 9px/1.5 Consolas,monospace; text-shadow: 0 0 6px #000; }
+.daemon-service > code { display: block; color: var(--violet); font: 8px/1.4 Consolas,monospace; }
+.collected-lexemes { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 7px; }
+.collected-lexemes > span { padding: 3px 4px; color: var(--paper); border-bottom: 1px dotted var(--rule); background: #010603a8; font: 10px/1.4 Consolas,monospace; animation: lexemeAccepted .5s steps(4,end) both; }
+.collected-lexemes small { font-size: 6px; color: var(--signal); }
+.word-daemon .daemon-invitation { display: block; min-height: 36px; margin-top: 7px; padding: 7px 9px; border: 1px solid var(--violet); background: #010603c9; color: var(--violet); font: 10px/1.4 Consolas,monospace; }
+.word-daemon .daemon-invitation:hover { background: var(--violet); color: var(--ink); }
+.word-daemon .word-offering { margin-top: 10px; padding: 10px; border-left: 1px solid var(--violet); background: #010603ec; pointer-events: auto; }
+.word-daemon .word-offering label { color: var(--violet); }
+.word-daemon .word-offering > div { align-items: center; gap: 7px; }
+.word-daemon .word-offering > div > span { color: var(--violet); font-size: 14px; }
+.word-daemon .daemon-pass { display: block; width: auto; min-height: 28px; padding: 5px 0 0; border: 0; background: transparent; color: var(--steel); font: 8px/1.4 Consolas,monospace; text-align: left; }
+.word-daemon .compiled-packet { margin: 8px 0 0; color: var(--acid); font: 10px/1.5 Consolas,monospace; overflow-wrap: anywhere; }
+.remembered-street .shadow-figure .resident-word { position: absolute; bottom: 91px; left: 50%; width: max-content; max-width: 160px; transform: translateX(-50%); padding: 4px; border-bottom: 1px solid currentColor; color: var(--paper); background: #010603da; font: 10px/1.4 Consolas,monospace; pointer-events: none; animation: residentReply 2.6s ease-out both; }
+@keyframes lexicalArrival { from { transform: translate(calc(-50% - 42vw),24px) skewX(-16deg); opacity: 0; } 20% { opacity: 1; } to { transform: translate(-50%,-50%); opacity: 1; } }
+@keyframes lexicalDeparture { 0% { transform: translate(-50%,-50%); opacity: 1; } 55% { opacity: .85; } 100% { transform: translate(calc(-50% + 45vw),-150px) scale(.25); opacity: 0; } }
+@keyframes lexemeAccepted { from { opacity: .1; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes residentReply { 0% { opacity: 0; transform: translate(-50%,5px); } 12%,70% { opacity: 1; transform: translate(-50%,0); } 100% { opacity: 0; transform: translate(-50%,-12px); } }
+@media (max-width: 700px) { .remembered-street .word-daemon { font-size: 8px; } .daemon-service { width: min(270px,80vw); } .word-daemon .daemon-invitation { min-height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .remembered-street .word-daemon { transition: none; animation: none; } .collected-lexemes > span, .remembered-street .resident-word { animation: none; } }
