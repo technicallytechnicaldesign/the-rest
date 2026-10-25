@@ -18,6 +18,7 @@ import {
   type SoundMeter,
 } from "./memory-score";
 import RememberedCorner from "./remembered-corner";
+import WordText from "./word-text";
 import {type EchoAnchor} from "./echo-daemon";
 import { DISTRICTS, streetVerse, collectLexeme, weaveWords, type DistrictId, type ResidentWord } from "./street-memory";
 
@@ -1601,7 +1602,7 @@ function StreetMode() {
                 className={lineCorruption ? `corrupted-${lineCorruption}` : ""}
                 key={`${index}-${line}`}
               >
-                <span>{renderCorruptedLine(line, index, corruption)}</span>
+                <span><WordText text={renderCorruptedLine(line, index, corruption)} /></span>
                 {lineCorruption && lineCorruption !== "fatal" && (
                   <b>{corruptionLabel(lineCorruption)}</b>
                 )}

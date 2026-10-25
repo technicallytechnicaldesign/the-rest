@@ -65,12 +65,12 @@ export default function EchoDaemon(props: Props) {
     <b>DÆMON://ECHO</b><i aria-hidden="true" />
     <div className="daemon-service">
       <code>{status}</code>
-      {(phase === "arriving" || phase === "offering") && <p className="echo-memory">{anchor.source} / last retained: “{anchor.word}”</p>}
+      {(phase === "arriving" || phase === "offering") && <p className="echo-memory">{anchor.source} / last retained: <em className="carried-lexeme">{anchor.word}</em></p>}
       {phase === "offering" && <div className="echo-choice">
         <button type="button" className="daemon-invitation" onClick={() => { callbacks.current.onBranch(anchor); setPhase("continuing"); }}>let it branch ↗</button>
         <button type="button" className="echo-decline" onClick={() => setPhase("released")}>leave it unrun</button>
       </div>}
-      {phase === "continuing" && <p className="echo-memory">“{anchor.word}” survives in another body.</p>}
+      {phase === "continuing" && <p className="echo-memory"><em className="carried-lexeme">{anchor.word}</em> survives in another body.</p>}
     </div>
   </div>;
 }

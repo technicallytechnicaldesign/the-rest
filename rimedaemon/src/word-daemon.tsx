@@ -2,6 +2,7 @@
 import {useEffect, useRef, useState, type CSSProperties, type FormEvent, type RefObject} from "react";
 import {cleanWord, type ResidentWord} from "./street-memory";
 import {type StreetSoundscape} from "./memory-score";
+import WordText from "./word-text";
 
 export type DaemonPhase = "away" | "arriving" | "gathering" | "inviting" | "listening" | "compiling" | "departing";
 export type DaemonTraffic = RefObject<"moth" | "echo" | null>;
@@ -119,14 +120,14 @@ export default function WordDaemon(props: Props) {
     <b>DÆMON://MOTH</b><i aria-hidden="true" />
     <div className="daemon-service">
       <code>{status}</code>
-      <div className="collected-lexemes" aria-label="Collected words">{collection.map((item,index) => <span key={`${cycle.current}-${index}`}><small>{item.source}</small> {item.word}</span>)}</div>
+      <div className="collected-lexemes" aria-label="Collected words">{collection.map((item,index) => <span key={`${cycle.current}-${index}`}><small>{item.source}</small> <em className="carried-lexeme">{item.word}</em></span>)}</div>
       {phase === "inviting" && <button type="button" className="daemon-invitation" onClick={() => { callbacks.current.engine.current?.emit("shift"); setPhase("listening"); }}>offer a word ↗</button>}
       {phase === "listening" && <form className="word-offering" onSubmit={offer}>
         <label htmlFor="daemon-word">ONE WORD FOR THE CURRENT</label>
         <div><span aria-hidden="true">&gt;</span><input ref={inputRef} id="daemon-word" value={input} onChange={event => setInput(event.target.value)} maxLength={32} placeholder="leave something running" autoComplete="off" /><button type="submit" disabled={!cleanWord(input)} aria-label="Pass your word to the daemon">↗</button></div>
         <button className="daemon-pass" type="button" onClick={() => { setInput(""); setPhase("compiling"); }}>pass / keep walking</button>
       </form>}
-      {phase === "compiling" && output && <p className="compiled-packet">{output.lines[0]}</p>}
+      {phase === "compiling" && output && <p className="compiled-packet"><WordText text={output.lines[0]} /></p>}
     </div>
   </div>;
 }

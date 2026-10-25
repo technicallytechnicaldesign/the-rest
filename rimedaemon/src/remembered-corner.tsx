@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from "rea
 import { DISTRICTS, MEMORY_KEY, cleanWord, freshMemory, readMemory, rememberWords, transmissionSvg, type DistrictId, type StreetMemory, type Transmission, type ResidentWord } from "./street-memory";
 import { type SoundPulse, type SoundMeter, type StreetSoundscape } from "./memory-score";
 import WordDaemon from "./word-daemon";
+import WordText from "./word-text";
 import EchoDaemon, {type EchoAnchor} from "./echo-daemon";
 
 type Props = {
@@ -137,6 +138,6 @@ export default function RememberedCorner({ children, district, lines, engine, pu
     <div className="corner-tools"><button className="mix-toggle" type="button" aria-expanded={mixOpen} onClick={() => setMixOpen(!mixOpen)}>MIX</button>
     <button className="pocket-toggle" type="button" aria-expanded={pocketOpen} onClick={() => setPocketOpen(!pocketOpen)}>POCKET / {String(memory.transmissions.length).padStart(2, "0")}</button></div>
     <div className="corner-notice" role="status">{notice || storageNote}</div>
-    {pocketOpen && <section className="pocket-panel" aria-label="Your kept transmissions"><header><div><span>LOCAL MEMORY</span><h2>A small thing, kept.</h2></div><button type="button" onClick={() => setPocketOpen(false)} aria-label="Close pocket">×</button></header><p className="pocket-note">Kept in this browser. Download a print to take it with you.</p><div className="pocket-list">{memory.transmissions.length === 0 ? <p className="empty-pocket">Nothing in your pocket yet.<br />Catch a few lines before the current takes them.</p> : memory.transmissions.map(t => <article key={t.id}><small>{DISTRICTS[t.district].name} / {new Date(t.time).toLocaleDateString()}</small>{t.lines.map((l, i) => <p key={i}>{l}</p>)}<button type="button" onClick={() => download(t)}>DOWNLOAD PRINT ↗</button></article>)}</div></section>}
+    {pocketOpen && <section className="pocket-panel" aria-label="Your kept transmissions"><header><div><span>LOCAL MEMORY</span><h2>A small thing, kept.</h2></div><button type="button" onClick={() => setPocketOpen(false)} aria-label="Close pocket">×</button></header><p className="pocket-note">Kept in this browser. Download a print to take it with you.</p><div className="pocket-list">{memory.transmissions.length === 0 ? <p className="empty-pocket">Nothing in your pocket yet.<br />Catch a few lines before the current takes them.</p> : memory.transmissions.map(t => <article key={t.id}><small>{DISTRICTS[t.district].name} / {new Date(t.time).toLocaleDateString()}</small>{t.lines.map((l, i) => <p key={i}><WordText text={l} /></p>)}<button type="button" onClick={() => download(t)}>DOWNLOAD PRINT ↗</button></article>)}</div></section>}
   </div>;
 }

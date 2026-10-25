@@ -153,5 +153,14 @@ export function transmissionSvg(t: Transmission): string {
     wrapped.push(current, "");
   }
   const height = Math.max(900, 400 + wrapped.length * 32);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="${height}" viewBox="0 0 720 ${height}" role="img" aria-label="${xml(district.name)} transmission"><rect width="720" height="${height}" fill="#080e12"/><path d="M48 130H672M48 ${height - 125}H672" stroke="${district.color}"/><circle cx="635" cy="76" r="14" fill="none" stroke="${district.color}"/><path d="M621 76H649M635 62V90" stroke="${district.color}"/><g fill="${district.color}" font-family="monospace"><text x="48" y="79" font-size="16" letter-spacing="4">RIME / DAEMON</text><text x="48" y="185" font-size="12" letter-spacing="2">${xml(district.address)}</text><text x="48" y="226" font-size="28">${xml(district.name)}</text></g><g fill="#e3ece7" font-family="monospace" font-size="23">${wrapped.map((l, i) => `<text x="48" y="${310 + i * 32}">${xml(l)}</text>`).join("")}</g><g fill="#91aaa5" font-family="monospace" font-size="12"><text x="48" y="${height - 88}">CAUGHT IN THE CURRENT / ${xml(t.time.slice(0, 10))}</text><text x="48" y="${height - 60}">${xml(t.id)} / A SMALL THING, KEPT.</text></g></svg>`;
+  let italic = false;
+  const printed = wrapped.map((line, index) => {
+    const spans = line.split(/([“”])/).map(part => {
+      if (part === "“") { italic = true; return ""; }
+      if (part === "”") { italic = false; return ""; }
+      return part ? `<tspan${italic ? ' font-style="italic"' : ""}>${xml(part)}</tspan>` : "";
+    }).join("");
+    return `<text x="48" y="${310 + index * 32}">${spans}</text>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="${height}" viewBox="0 0 720 ${height}" role="img" aria-label="${xml(district.name)} transmission"><rect width="720" height="${height}" fill="#080e12"/><path d="M48 130H672M48 ${height - 125}H672" stroke="${district.color}"/><circle cx="635" cy="76" r="14" fill="none" stroke="${district.color}"/><path d="M621 76H649M635 62V90" stroke="${district.color}"/><g fill="${district.color}" font-family="monospace"><text x="48" y="79" font-size="16" letter-spacing="4">RIME / DAEMON</text><text x="48" y="185" font-size="12" letter-spacing="2">${xml(district.address)}</text><text x="48" y="226" font-size="28">${xml(district.name)}</text></g><g fill="#e3ece7" font-family="monospace" font-size="23">${printed}</g><g fill="#91aaa5" font-family="monospace" font-size="12"><text x="48" y="${height - 88}">CAUGHT IN THE CURRENT / ${xml(t.time.slice(0, 10))}</text><text x="48" y="${height - 60}">${xml(t.id)} / A SMALL THING, KEPT.</text></g></svg>`;
 }
