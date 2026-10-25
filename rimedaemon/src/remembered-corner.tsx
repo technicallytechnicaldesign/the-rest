@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from "rea
 import { DISTRICTS, MEMORY_KEY, cleanWord, freshMemory, readMemory, rememberWords, transmissionSvg, type DistrictId, type StreetMemory, type Transmission, type ResidentWord } from "./street-memory";
 import { type SoundPulse, type SoundMeter, type StreetSoundscape } from "./memory-score";
 import WordDaemon from "./word-daemon";
+import EchoDaemon, {type EchoAnchor} from "./echo-daemon";
 
 type Props = {
   children: ReactNode;
@@ -17,6 +18,8 @@ type Props = {
   onWord: (word: string) => void;
   onGather: () => ResidentWord;
   onCompile: (words: string[]) => {lines: string[]; delivered: boolean};
+  onLocateEcho: () => EchoAnchor | null;
+  onBranch: (anchor: EchoAnchor) => void;
 };
 
 function download(t: Transmission) {
@@ -27,7 +30,8 @@ function download(t: Transmission) {
   anchor.click(); window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export default function RememberedCorner({ children, district, lines, engine, pulse, meter, held, onHold, onDistrict, onWord, onGather, onCompile }: Props) {
+export default function RememberedCorner({ children, district, lines, engine, pulse, meter, held, onHold, onDistrict, onWord, onGather, onCompile, onLocateEcho, onBranch }: Props) {
+  const traffic = useRef<"moth" | "echo" | null>(null);
   const [memory, setMemory] = useState<StreetMemory>(freshMemory);
   const memoryRef = useRef(memory);
   const initialized = useRef(false);
@@ -118,7 +122,8 @@ export default function RememberedCorner({ children, district, lines, engine, pu
 
     <div className="corner-address"><span>{d.address}</span><h1>{d.name}</h1><p>{d.description}</p></div>
 
-    <WordDaemon knownWord={memory.word || memory.words[memory.words.length - 1] || ""} engine={engine} onGather={onGather} onOffer={giveWord} onCompile={compile} />
+    <WordDaemon traffic={traffic} knownWord={memory.word || memory.words[memory.words.length - 1] || ""} engine={engine} onGather={onGather} onOffer={giveWord} onCompile={compile} />
+    <EchoDaemon traffic={traffic} onLocate={onLocateEcho} onBranch={onBranch} />
 
     <div className="corner-poem">{children}</div>
     <div className="current-actions"><button type="button" onClick={onHold} aria-pressed={held}>{held ? "LET IT FLOW ↗" : "STAY WITH THESE LINES ‖"}</button><button type="button" onClick={keep}>KEEP THIS MOMENT +</button></div>

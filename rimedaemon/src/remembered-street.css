@@ -102,3 +102,19 @@
 @keyframes residentReply { 0% { opacity: 0; transform: translate(-50%,5px); } 12%,70% { opacity: 1; transform: translate(-50%,0); } 100% { opacity: 0; transform: translate(-50%,-12px); } }
 @media (max-width: 700px) { .remembered-street .word-daemon { font-size: 8px; } .daemon-service { width: min(270px,80vw); } .word-daemon .daemon-invitation { min-height: 40px; } }
 @media (prefers-reduced-motion: reduce) { .remembered-street .word-daemon { transition: none; animation: none; } .collected-lexemes > span, .remembered-street .resident-word { animation: none; } }
+
+.remembered-street .echo-daemon { color: var(--signal); font-weight: 400; }
+.echo-daemon .daemon-service > code { color: var(--signal); }
+.echo-memory { margin: 8px 0 0; color: var(--steel); font: 9px/1.6 Consolas,monospace; overflow-wrap: anywhere; }
+.echo-choice { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 3px; }
+.echo-daemon .daemon-invitation { border-color: var(--signal); color: var(--signal); font-size: 9px; }
+.echo-daemon .daemon-invitation:hover { background: var(--signal); color: var(--ink); }
+.echo-decline { padding: 8px 0; min-height: 36px; border: 0; background: transparent; color: var(--steel); font: 8px/1.4 Consolas,monospace; }
+.echo-decline:hover { color: var(--signal); }
+.remembered-street .shadow-figure .continuation-shell { position: absolute; inset: 0; display: block; color: var(--signal); pointer-events: none; animation: echoDivergence 18s ease-out both; }
+.remembered-street .continuation-shell > i, .remembered-street .continuation-shell > b { background: #02100c66; border-style: dotted; }
+.remembered-street .shadow-figure .continuation-shell > code { animation: none; opacity: .7; font-size: 5px; top: 78px; }
+.continuation-shell > em { position: absolute; top: -18px; left: 50%; width: max-content; max-width: 150px; transform: translateX(-50%); font: 7px/1.3 Consolas,monospace; color: var(--signal); background: #020806b3; }
+@keyframes echoDivergence { 0% { opacity: 0; transform: translateX(0); } 12% { opacity: .45; transform: translateX(16px); } 50% { opacity: .35; transform: translate(29px,-3px); } 88% { opacity: .2; transform: translate(38px,-7px); } 100% { opacity: 0; transform: translate(44px,-12px); } }
+@media (max-width: 700px) { .echo-memory { font-size: 8px; } .echo-choice { gap: 2px 10px; } .echo-decline { min-height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .remembered-street .shadow-figure .continuation-shell { animation: none; transform: translateX(24px); opacity: .35; } }

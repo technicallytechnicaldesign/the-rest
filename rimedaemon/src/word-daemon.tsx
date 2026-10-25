@@ -4,7 +4,9 @@ import {cleanWord, type ResidentWord} from "./street-memory";
 import {type StreetSoundscape} from "./memory-score";
 
 export type DaemonPhase = "away" | "arriving" | "gathering" | "inviting" | "listening" | "compiling" | "departing";
+export type DaemonTraffic = RefObject<"moth" | "echo" | null>;
 type Props = {
+  traffic: DaemonTraffic;
   knownWord: string;
   engine: RefObject<StreetSoundscape | null>;
   onGather: () => ResidentWord;
@@ -27,6 +29,10 @@ export default function WordDaemon(props: Props) {
   const cycle = useRef(0);
   const gathered = useRef("");
   const compiled = useRef(0);
+
+  useEffect(() => () => {
+    if (callbacks.current.traffic.current === "moth") callbacks.current.traffic.current = null;
+  }, []);
 
   function addWord(word: ResidentWord) {
     const next = [...collectionRef.current, word];
@@ -61,6 +67,8 @@ export default function WordDaemon(props: Props) {
     function advance() {
       if (disposed) return;
       if (phase === "away") {
+        if (callbacks.current.traffic.current !== null) { timer = window.setTimeout(advance, 3500); return; }
+        callbacks.current.traffic.current = "moth";
         cycle.current += 1;
         const cached = cleanWord(callbacks.current.knownWord);
         const words = cached ? [{source: "CACHE", word: cached, x: 50, y: 32}] : [];
@@ -73,7 +81,7 @@ export default function WordDaemon(props: Props) {
         else setPhase("inviting");
       } else if (phase === "inviting") setPhase("compiling");
       else if (phase === "compiling") setPhase("departing");
-      else if (phase === "departing") setPhase("away");
+      else if (phase === "departing") { callbacks.current.traffic.current = null; setPhase("away"); }
     }
 
     function arm() {

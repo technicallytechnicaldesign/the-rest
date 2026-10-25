@@ -18,6 +18,7 @@ import {
   type SoundMeter,
 } from "./memory-score";
 import RememberedCorner from "./remembered-corner";
+import {type EchoAnchor} from "./echo-daemon";
 import { DISTRICTS, streetVerse, collectLexeme, weaveWords, type DistrictId, type ResidentWord } from "./street-memory";
 
 type Channel = "street" | "babel" | "franchise" | "void";
@@ -1095,6 +1096,7 @@ function StreetMode() {
   const stage = useRef<HTMLElement | null>(null);
   const residentCursor = useRef(0);
   const [residentWords, setResidentWords] = useState<Record<number, {word: string; stamp: number}>>({});
+  const [echoResident, setEchoResident] = useState<{index: number; word: string; stamp: number} | null>(null);
   const [scoreSeed, setScoreSeed] = useState("");
   const compiledPending = useRef<{words: string[]; lines: string[]} | null>(null);
   const daemonCurrentUntil = useRef(0);
@@ -1218,6 +1220,31 @@ function StreetMode() {
     daemonCurrentUntil.current = Date.now() + 12000;
     setActiveVerse({id: `daemon-${Date.now()}`, lines: packet.lines, source: `MOTH://COMPILE / ${packet.words.length} LEXEMES`, kind: "GENERATED"});
     revolveLines(packet.lines, [0, 1, 2], "lexemes joined");
+  }
+
+  function locateEcho(): EchoAnchor | null {
+    const scene = stage.current;
+    if (!scene) return null;
+    const bounds = scene.getBoundingClientRect();
+    const figures = [...scene.querySelectorAll<HTMLElement>(".shadow-figure")].map(element => ({element, rect: element.getBoundingClientRect()})).filter(item => {
+      const y = item.rect.top - bounds.top;
+      return y > bounds.height * .2 && y < bounds.height * .66 && Number(getComputedStyle(item.element).opacity) > .15;
+    });
+    if (!figures.length) return null;
+    const target = figures[Math.floor(Math.random() * figures.length)];
+    const index = Number(target.element.dataset.figure);
+    const margin = bounds.width < 700 ? 40 : 19;
+    return {index, source: `SELF.${String(index + 1).padStart(2, "0")}`,
+      word: collectLexeme(displayLinesRef.current, index + passage.current),
+      x: Math.min(100 - margin, Math.max(margin, (target.rect.left + target.rect.width / 2 - bounds.left) / bounds.width * 100)),
+      y: Math.min(40, Math.max(25, (target.rect.top - bounds.top) / bounds.height * 100 - 6))};
+  }
+
+  function branchResident(anchor: EchoAnchor) {
+    const stamp = Date.now();
+    setEchoResident({index: anchor.index, word: anchor.word, stamp});
+    sound("fork");
+    queueEffect(18000, () => setEchoResident(current => current?.stamp === stamp ? null : current));
   }
 
   function compileWords(words: string[]) {
@@ -1518,6 +1545,7 @@ function StreetMode() {
               >
                 <i /><b /><u /><s /><code>{patch}</code>
                 {residentWords[index] && <em className="resident-word">λ {residentWords[index].word}</em>}
+                {echoResident?.index === index && <span className="continuation-shell" key={echoResident.stamp} data-echo-copy={index} aria-hidden="true"><i /><b /><code>SELF.{String(index + 1).padStart(2, "0")}.1 / {echoResident.word}</code><em>same memory. different tomorrow.</em></span>}
               </div>
             );
           })}
@@ -1554,7 +1582,7 @@ function StreetMode() {
 
       <RememberedCorner district={district} lines={displayLines} engine={soundscape} pulse={pulse} meter={meter}
         held={held} onHold={toggleHold} onDistrict={visitDistrict} onWord={rememberWord}
-        onGather={gatherResident} onCompile={compileWords}>
+        onGather={gatherResident} onCompile={compileWords} onLocateEcho={locateEcho} onBranch={branchResident}>
       <div
         onClick={strikePanel}
         className={`living-verse ${corruption ? "is-corrupting" : ""}${panelHit > 0 ? " is-distorted" : ""}`}

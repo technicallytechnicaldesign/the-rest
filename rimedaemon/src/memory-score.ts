@@ -1,5 +1,5 @@
 import { DISTRICTS, type DistrictId } from "./street-memory";
-export type StreetSoundEvent = "leak" | "negotiate" | "commit" | "advance" | "disturb" | "slice" | "giggle" | "shift" | "distort" | "static" | "clack";
+export type StreetSoundEvent = "leak" | "negotiate" | "commit" | "advance" | "disturb" | "slice" | "giggle" | "shift" | "distort" | "static" | "clack" | "fork";
 export type SoundPulse = { note: string; voice: string; pan: number };
 export type SoundMeter = { rms: number; peak: number; state: string; voices: number };
 export type StreetSoundscape = {
@@ -283,6 +283,12 @@ export function createStreetSoundscape(onPulse?: (pulse: SoundPulse) => void, on
     if (now - (last[event] ?? -100) < 0.3) return;
     last[event] = now;
     const d = DISTRICTS[district];
+    if (event === "fork") {
+      const hz = d.root * ratio(d.degrees[motif[cursor % 7]] + 24);
+      key(hz, now + 0.01, 0.24, -0.42, "a self, remembered");
+      key(hz * ratio(7), now + 0.38, 0.18, 0.42, "another continuation");
+      return;
+    }
     if (["leak", "distort", "static", "clack", "slice"].includes(event)) {
       breath(now + 0.01, event === "slice" ? 0.7 : 0.36, true);
     } else {
